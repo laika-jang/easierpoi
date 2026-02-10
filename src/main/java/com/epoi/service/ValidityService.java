@@ -21,14 +21,22 @@ public class ValidityService {
     Logger logger = LoggerFactory.getLogger(getClass());
 
     // 네이버 지도 검색 결과 반환
-    public Map<String, String> getResult(Map<String, String> param) {
-        Map<String, String> result = new HashMap<>();
+    public Map<String, Object> getResult(Map<String, String> param) {
+        Map<String, Object> result = new HashMap<>();
+
+        // 메시지
+        String msgFind = "있어요 (O)";
+        String msgNotFind = "없어요 (X)";
+        String msgSimilar = "[보류] 장소가 달라요";
+        String msgError1 = "error: 데이터 추출 중 예외가 발생했어요. (01: 반환값이 없음)";
+        String msgError2 = "error: 데이터 추출 중 예외가 발생했어요. (02: 드라이버 동작 과정에서 예외 발생)";
 
         /* 키워드 정제
         * place       : 상호
         * placeAndAddr: 지역 + 상호 (지역은 시·구 혹은 도·군 단위로 한정)
         * addrLoad    : 도로명 주소 (지번 주소가 인입되는 경우가 있으므로, 도로명 주소인지 여부 확인 후 값 추가)
         * addrNum     : 지번 주소
+        * local       : 지역
         * */
         Map<String, String> keywords = new HashMap<>();
         keywords.put("place", param.get("place").split(" ", 2)[1]);
@@ -39,6 +47,7 @@ public class ValidityService {
         );
         keywords.put("addrLoad", (!param.get("addrLoad").isEmpty() && distAddr(param.get("addrLoad"))) ? removeSameWord(param.get("addrLoad")) : "");
         keywords.put("addrNum", !param.get("addrNum").isEmpty() ? removeSameWord(param.get("addrNum")) : "");
+        keywords.put("local", param.get("addrNum").split(" ")[0] + " " + param.get("addrNum").split(" ")[1] + " " + param.get("addrNum").split(" ")[2]);
         logger.info("ValidityService.getResult works. keywords: " + keywords);
 
         // Selenium 드라이버 설정
@@ -60,35 +69,34 @@ public class ValidityService {
 
         try {
             // 1. 지역 + 상호 검색
-            Map<String, String> map = searchPlace(driver, keywords, "place");
-            if ("success".equals(map.get("find"))) {
-                result.put("msg", "있어요 (O)");
-                result.put("result", "find");
-            } else {
+            result = searchPlace(driver, keywords, "place");
+
+            if ("find".equals(result.get("find"))) result.put("msg", msgFind);
+            if ("similar".equals(result.get("find"))) result.put("msg", msgSimilar);
+            if ("notFind".equals(result.get("find"))) {
             // 2. 주소 + 상호 검색
-                map = searchPlace(driver, keywords, "addrAndPlace");
-                if ("success".equals(map.get("find"))) {
-                    result.put("msg", "있어요 (O)");
-                    result.put("success", "true");
+                result = searchPlace(driver, keywords, "addrAndPlace");
+
+                if ("find".equals(result.get("find"))) {
+                    result.put("msg", msgFind);
                 } else {
-                    result.put("msg", "없어요 (X)");
-                    result.put("success", "false");
-                    result.put("list", searchPlace(driver, keywords, "addr").get("list"));
+                    result.put("msg", msgNotFind);
+                    result.put("list", searchPlace(driver, keywords, "addr"));
                 }
             }
 
             // 예외 발생시
-            if (map.isEmpty()) {
-                result.put("msg", "error: 데이터 추출 중 예외가 발생했어요. (01: 반환값이 없음)");
-                result.put("success", "error");
+            if (result.isEmpty()) {
+                result.put("msg", msgError1);
+                result.put("result", "error1");
             }
         } catch (Exception e) {
             logger.error(e.getMessage());
-            result.put("msg", "error: 데이터 추출 중 예외가 발생했어요. (02: 드라이버 동작 과정에서 예외 발생)");
-            result.put("success", "error");
-            result.put("errorLog", e.getMessage());
+            result.put("msg", msgError2);
+            result.put("result", "error2");
+            result.put("log", e.getMessage());
         } finally {
-            logger.error("driver quit");
+            logger.info("driver quit");
             driver.quit();
         }
 
@@ -96,13 +104,13 @@ public class ValidityService {
     }
 
     // 검색 결과를 목록으로 저장
-    public Map<String, String> searchPlace(WebDriver driver, Map<String, String> param, String flag) throws UnsupportedEncodingException {
+    public Map<String, Object> searchPlace(WebDriver driver, Map<String, String> param, String flag) throws UnsupportedEncodingException {
         // 검색 결과가 있을 경우       : 키워드와 검색 결과 대조
         // => 동일한 장소를 찾았을 경우    : 작업 종료 및 결과 반환
         // => 동일한 장소를 찾지 못했을 경우: 다음 페이지로 전환
         //    => 마지막 페이지일 경우          : 작업 종료 및 결과 반환
 
-        Map<String, String> result = new HashMap<>();
+        Map<String, Object> result = new HashMap<>();
 
         // 검색 관련 변수
         String searchUrl = "https://pcmap.place.naver.com/place/list?query=";
@@ -115,9 +123,10 @@ public class ValidityService {
 
         // 검색 결과 관련 변수
         boolean samePlace = false;     // 같은 장소를 찾았을 경우 true
+        boolean diffAddr = false;      // 상호가 같지만 주소는 다른 장소를 찾았을 경우 true
         boolean nextPageExist = false; // 다음 페이지가 있을 경우 true
         List<WebElement> elemList = new ArrayList<>();
-        List<String> resultList = new ArrayList<>();
+        List<Map<String, String>> resultList = new ArrayList<>();
 
         driver.get(searchUrl + java.net.URLEncoder.encode(keywords, "UTF-8"));
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
@@ -126,7 +135,7 @@ public class ValidityService {
         // 검색 결과가 있는 경우
         if (!driver.findElements(By.cssSelector("#_pcmap_list_scroll_container")).isEmpty()) {
             do {
-                logger.info("start to read page");
+                logger.info("start reading page");
                 WebElement elemNavNext = driver.findElement(By.cssSelector(".zRM9F .eUTV2:last-child"));
                 elemList = driver.findElements(By.cssSelector("#_pcmap_list_scroll_container li"));
                 nextPageExist = !Objects.requireNonNull(elemNavNext.getDomAttribute("aria-disabled")).equals("true");
@@ -135,18 +144,21 @@ public class ValidityService {
                 for (WebElement elem : elemList) {
                     Map<String, String> search = new HashMap<>();
 
+                    // 상호 저장
                     search.put("place", elem.findElement(By.cssSelector(".place_bluelink span")).getText());
+
+                    // 주소 저장
                     elem.findElement(By.cssSelector(".uFxr1")).click();
 
                     String[] addrFormer = elem.findElement(By.cssSelector(".suKMR")).getText().split(" ");
                     StringBuilder addrFormerCut = new StringBuilder();
 
-                    // 지역 정보 추가
                     for (int i = 0; i < (addrFormer.length - 1); i++) addrFormerCut.append(addrFormer[i]).append(" ");
                     search.put("addrLoad", addrFormerCut + elem.findElement(By.cssSelector(".TvoI6")).getText());
                     search.put("addrNum", addrFormerCut + elem.findElement(By.cssSelector(".zZfO1:nth-child(2) .TvoI6")).getText());
+                    search.put("local", elem.findElement(By.cssSelector(".suKMR")).getText());
 
-                    // 장소명과 도로명 주소 또는 지번 주소가 같을 경우 반복문 종료
+                    // 상호와 도로명 주소 또는 지번 주소가 검색어와 같은 경우 반복문 종료
                     if (
                         (search.get("place").equals(param.get("place")) && search.get("addrLoad").contains(param.get("addrLoad"))) ||
                         (search.get("place").equals(param.get("place")) && search.get("addrNum").contains(param.get("addrNum")))
@@ -156,9 +168,18 @@ public class ValidityService {
                         break;
                     }
 
-                    // 장소명과 도로명 주소 또는 지번 주소가 같지 않을 경우 resultList에 map 저장
+                    // 상호와 지역은 동일하나 상세 주소가 다른 경우 반복문 종료
+                    if (search.get("place").equals(param.get("place")) && search.get("local").equals(param.get("local"))) {
+                        logger.info("the place you searched is exist at different address.");
+                        diffAddr = true;
+                        resultList.clear();
+                        resultList.add(search);
+                        break;
+                    }
+
+                    // 상호와 도로명 주소 또는 지번 주소가 같지 않을 경우 resultList에 map 저장
                     logger.info("search: " + search);
-                    resultList.add(search.toString());
+                    resultList.add(search);
                 }
 
                 // 다음 페이지 열기
@@ -167,17 +188,20 @@ public class ValidityService {
                     logger.info("elemNavNext.click();");
                     elemNavNext.click();
                 }
-            } while (!samePlace && nextPageExist); // 동일한 장소를 찾지 못한 상태에서 목록이 20개를 초과하는 경우 do문 반복
+            } while (!(samePlace || diffAddr) && nextPageExist); // 동일한 장소를 찾지 못한 상태에서 다음 페이지가 존재하는 경우 do문 반복
         }
 
         if (samePlace) {
-            result.put("find", "success");
+            result.put("find", "find");
+        } else if (diffAddr) {
+            result.put("find", "similar");
+            result.put("list", resultList);
         } else {
-            logger.info("resultList: " + resultList);
-            result.put("find", "fail");
-            result.put("list", resultList.toString());
+            result.put("find", "notFind");
+            result.put("list", resultList.isEmpty() ? "" : resultList);
         }
 
+        logger.info("result: " + result);
         return result;
     }
 

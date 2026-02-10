@@ -3,7 +3,6 @@ setEvents();
 function setEvents() {
     // 유효성 검사
     document.getElementById('validity').addEventListener('click', validity);
-    document.getElementById('validityAdd').addEventListener('click', validityAdd);
 
     // 입력폼 초기화
     document.getElementById('initForm').addEventListener('click', initForm);
@@ -27,37 +26,24 @@ async function validity() {
     try {
         const response = await fetch(`/api/v1/validity/get-result?place=${encodeURIComponent(place)}&addrLoad=${encodeURIComponent(addrLoad)}&addrNum=${encodeURIComponent(addrNum)}`);
         const data = await response.json();
+        console.log(data);
 
-        if (data.success === 'true') document.getElementById('result-container').innerHTML = data.msg;
-        if (data.success === 'false') {
-            document.getElementById('keywords').style.display = 'block';
-            document.getElementById('result-container').innerHTML = data.msg;
+        switch (data.result) {
+            case 'find':
+                document.getElementById('result-container').innerHTML = '<p>' + data.msg + '</p>';
+                break;
+            case 'similar':
+                document.getElementById('result-container').innerHTML = '<p>' + data.msg + '</p>';
+                break;
+            case 'notFind':
+                document.getElementById('keywords').style.display = 'block';
+                document.getElementById('result-container').innerHTML = '<p>' + data.msg + '</p>';
+                break;
+            case 'error':
+                document.getElementById('result-container').innerHTML = '<p>' + data.msg + '</p>';
+                if (data.log !== null) document.getElementById('result-container').innerHTML += '<p>' + data.errorLog + '</p>';
+                break;
         }
-        if (data.success === 'error') document.getElementById('result-container').innerHTML = data.msg + '<br />' + data.errorLog;
-    } catch (e) {
-        console.info(e);
-    }
-}
-
-// 추가 유효성 검사
-async function validityAdd() {
-    const place = document.getElementById('keywords').value;
-    const addrLoad = document.getElementById('addrLoad').value == null ? '' : document.getElementById('addrLoad').value;
-    const addrNum = document.getElementById('addrNum').value == null ? '' : document.getElementById('addrNum').value;
-
-    if (!place) return alert("키워드를 입력하세요.");
-    if (addrLoad === '' && addrNum === '') return alert("도로명주소 혹은 지번주소를 입력하세요.");
-
-    try {
-        const response = await fetch(`/api/v1/validity/get-result?place=${encodeURIComponent(place)}&addrLoad=${encodeURIComponent(addrLoad)}&addrNum=${encodeURIComponent(addrNum)}`);
-        const data = await response.json();
-
-        if (data.success === 'true') document.getElementById('result-container').innerHTML = data.msg;
-        if (data.success === 'false') {
-            document.getElementById('keywords').style.display = 'block';
-            document.getElementById('result-container').innerHTML = data.msg;
-        }
-        if (data.success === 'error') document.getElementById('result-container').innerHTML = data.msg + '<br />' + data.errorLog;
     } catch (e) {
         console.info(e);
     }

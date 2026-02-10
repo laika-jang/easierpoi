@@ -23,14 +23,9 @@
         <button type="button" class="btn btn-primary" id="validity" name="validity">검색</button>
         <button type="button" class="btn btn-secondary" id="initForm" name="initForm">초기화</button>
     </div>
-    <div class="row mb-5" id="keywords" style="display: none">
-        <label for="keywords" class="form-label small">추가 검색어</label>
-        <input type="text" class="form-control mb-2" id="keywords" name="keywords" placeholder="검색어를 입력하세요" required />
-        <button type="button" class="btn btn-primary" id="validityAdd" name="validityAdd">검색</button>
-    </div>
     <div class="row d-grid gap-2 mb-5">
         <button type="button" class="btn btn-outline-primary" id="test01" name="test01">같은 주소에 동일한 상호 있음</button>
-        <button type="button" class="btn btn-outline-secondary" id="test02" name="test02">다른 주소에 동일한 상호 있음</button>
+        <button type="button" class="btn btn-outline-primary" id="test02" name="test02">다른 주소에 동일한 상호 있음</button>
         <button type="button" class="btn btn-outline-secondary" id="test03" name="test03">동일한 상호를 찾지 못함</button>
         <button type="button" class="btn btn-outline-primary" id="test04" name="test04">도로명주소에 지번주소 입력</button>
     </div>

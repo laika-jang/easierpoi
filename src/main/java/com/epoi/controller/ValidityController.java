@@ -15,7 +15,7 @@ public class ValidityController {
     }
 
     @GetMapping("/get-result")
-    public Map<String, String> getResult(@RequestParam Map<String, String> param) {
+    public Map<String, Object> getResult(@RequestParam Map<String, String> param) {
         return validityService.getResult(param);
     }
 }
