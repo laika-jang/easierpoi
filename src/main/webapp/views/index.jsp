@@ -7,27 +7,32 @@
 </head>
 <body>
 <div class="container gy-5" style="max-width: 450px;">
-    <div class="row mb-3">
-        <label for="place" class="form-label small">상호</label>
-        <input type="text" class="form-control" id="place" name="place" placeholder="상호를 입력하세요" required />
+    <div class="row mt-4 mb-2">
+        <label for="place" class="form-label col-form-label col-sm-2">상호</label>
+        <div class="col-sm-10">
+            <input type="text" class="form-control" id="place" name="place" placeholder="상호를 입력하세요" required />
+        </div>
     </div>
     <div class="row mb-3">
-        <label for="place" class="form-label small">도로명주소</label>
-        <input type="text" class="form-control" id="addrLoad" name="addrLoad" placeholder="도로명주소를 입력하세요" />
+        <label for="addr" class="form-label col-form-label col-sm-2">주소</label>
+        <div class="col-sm-10">
+            <input type="text" class="form-control" id="addr" name="addr" placeholder="주소를 입력하세요" required />
+            <div id="addrNum" class="form-text"></div>
+        </div>
     </div>
-    <div class="row mb-3">
-        <label for="place" class="form-label small">지번주소</label>
-        <input type="text" class="form-control" id="addrNum" name="addrNum" placeholder="지번주소를 입력하세요" />
-    </div>
-    <div class="row d-grid gap-2 mb-5">
-        <button type="button" class="btn btn-primary" id="validity" name="validity">검색</button>
-        <button type="button" class="btn btn-secondary" id="initForm" name="initForm">초기화</button>
-    </div>
-    <div class="row d-grid gap-2 mb-5">
-        <button type="button" class="btn btn-outline-primary" id="test01" name="test01">같은 주소에 동일한 상호 있음</button>
-        <button type="button" class="btn btn-outline-primary" id="test02" name="test02">다른 주소에 동일한 상호 있음</button>
-        <button type="button" class="btn btn-outline-secondary" id="test03" name="test03">동일한 상호를 찾지 못함</button>
-        <button type="button" class="btn btn-outline-primary" id="test04" name="test04">도로명주소에 지번주소 입력</button>
+    <div class="row mb-4">
+        <div class="col-auto">
+            <button type="button" class="btn btn-primary" id="validity">&nbsp;검색&nbsp;</button>
+            <button type="button" class="btn btn-secondary" id="initForm">초기화</button>
+        </div>
+        <div class="col-auto">
+            <select class="form-select" id="test">
+                <option selected>테스트</option>
+                <option value="1">있어요 (O)</option>
+                <option value="2">없어요 (X)</option>
+                <option value="3">다른 주소</option>
+            </select>
+        </div>
     </div>
 </div>
 <div id="result-container" class="container" style="max-width: 450px;"></div>
