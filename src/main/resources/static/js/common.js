@@ -52,21 +52,84 @@ async function validity() {
     const place = document.getElementById('place').value;
     const addrLoad = document.getElementById('addr').value === document.getElementById('addrNum').innerHTML ? '' : document.getElementById('addr').value;
     const addrNum = document.getElementById('addrNum').innerHTML;
+    const url = `/api/v1/validity/get-result?place=${encodeURIComponent(place)}&addrLoad=${encodeURIComponent(addrLoad)}&addrNum=${encodeURIComponent(addrNum)}`;
 
     try {
-        const response = await fetch(`/api/v1/validity/get-result?place=${encodeURIComponent(place)}&addrLoad=${encodeURIComponent(addrLoad)}&addrNum=${encodeURIComponent(addrNum)}`);
+        const response = await fetch(url);
         const data = await response.json();
-        console.log(data);
+        drawValidityResult(data);
     } catch (e) {
         console.error(e);
     }
+}
+
+// 검사 결과 출력
+function drawValidityResult(data) {
+    let html = '';
+
+    // msg 출력
+    html += '<div id="result-msg" class="alert alert-secondary" role="alert">';
+    html += data.msg;
+    html += '</div>';
+
+    // data.list가 없을 경우 함수 종료
+    if (data.list === null) return false;
+
+    // 검색 결과 출력
+    const resultList = document.querySelector('#result-list .list-group');
+
+    html += '<div id="result-list">';
+    html += '<p>검색 결과</p>';
+    html += '<ul class="list-group">';
+
+    for (let i = 0; i < data.list.length; i++) {
+        html += '<li class="list-group-item">';
+        html += '<p>' + data.list[i].place + ' <small class="text-body-tertiary">(' + data.list[i].category + ')</small></p>';
+        html += '<small>' + data.list[i].addrLoad + '<br />';
+        html += '<span class="text-body-tertiary">' + data.list[i].addrNum + '</span>';
+        html += '</small>';
+        html += '</li>';
+    }
+
+    html += '</ul>';
+    html += '</div>';
+
+    // 키워드 검색 결과 출력
+    if (document.getElementById('place').value.includes(';')) {
+        const keywordsList = document.getElementById('place').value.split(';');
+
+        for (let i = 1; i < keywordsList.length; i++) {
+            const keywords = keywordsList[i];
+
+            html += '<div id="result-list">';
+            html += '<p>\'' + keywords + '\' 검색 결과</p>';
+            html += '<ul class="list-group">';
+
+            for (let j = 0; j < data[keywords].length; j++) {
+                html += '<li class="list-group-item">';
+                html += '<p>' + data[keywords][j].place + ' <small class="text-body-tertiary">(' + data[keywords][j].category + ')</small></p>';
+                html += '<small>' + data[keywords][j].addrLoad + '<br />';
+                html += '<span class="text-body-tertiary">' + data[keywords][j].addrNum + '</span>';
+                html += '</small>';
+                html += '</li>';
+            }
+
+            html += '</ul>';
+            html += '</div>';
+        }
+    }
+
+    document.getElementById('result-container').innerHTML = html;
+    document.getElementById('result-container').classList.remove('d-none');
 }
 
 // 폼 초기화
 function initForm() {
     document.getElementById('place').value = '';
     document.getElementById('addr').value = '';
-    document.getElementById('result-container').innerHTML = '';
+    document.getElementById('result-msg').innerHTML = '';
+    document.getElementById('result-list').innerHTML = '';
+    document.getElementById('result-container').classList.add('d-none');
 }
 
 // 테스트
@@ -79,7 +142,7 @@ function test(e) {
             break;
         case '2':
             // 동일한 상호를 찾지 못함
-            document.getElementById('place').value = '구로동 메가MGC커피 조촌점';
+            document.getElementById('place').value = '구로동 메가MGC커피\;병원\;약국';
             document.getElementById('addr').value = '전북특별자치도 군산시 궁포3로 8';
             break;
         case '3':
@@ -88,9 +151,7 @@ function test(e) {
             document.getElementById('addr').value = '전북특별자치도 군산시 궁포3로 12';
             break;
         default:
-            document.getElementById('place').value = '';
-            document.getElementById('addr').value = '';
-            document.getElementById('result-container').innerHTML = '';
+            initForm();
             break;
     }
 }
