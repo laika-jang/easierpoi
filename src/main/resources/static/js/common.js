@@ -50,8 +50,8 @@ async function validity() {
     await changeAddr();
 
     const place = document.getElementById('place').value;
-    const addrLoad = document.getElementById('addr').value === document.getElementById('addrNum').innerHTML ? '' : document.getElementById('addr').value;
-    const addrNum = document.getElementById('addrNum').innerHTML;
+    const addrLoad = document.getElementById('addr').value === document.getElementById('addrNum').innerText ? '' : document.getElementById('addr').value;
+    const addrNum = document.getElementById('addrNum').innerText;
     const url = `/api/v1/validity/get-result?place=${encodeURIComponent(place)}&addrLoad=${encodeURIComponent(addrLoad)}&addrNum=${encodeURIComponent(addrNum)}`;
 
     try {
@@ -64,7 +64,7 @@ async function validity() {
 }
 
 // 검사 결과 출력
-function drawValidityResult(data) {
+function drawValidityResult(data, addrNum) {
     let html = '';
 
     // msg 출력
@@ -78,16 +78,22 @@ function drawValidityResult(data) {
     // 검색 결과 출력
     const resultList = document.querySelector('#result-list .list-group');
 
-    html += '<div id="result-list">';
+    html += '<div id="result-list" class="mt-5">';
     html += '<p>검색 결과</p>';
     html += '<ul class="list-group">';
 
     for (let i = 0; i < data.list.length; i++) {
+        const mapId = `map-${i}`;
+
         html += '<li class="list-group-item">';
         html += '<p>' + data.list[i].place + ' <small class="text-body-tertiary">(' + data.list[i].category + ')</small></p>';
         html += '<small>' + data.list[i].addrLoad + '<br />';
         html += '<span class="text-body-tertiary">' + data.list[i].addrNum + '</span>';
         html += '</small>';
+        if (data.status === "3") {
+            html += `<div id="${mapId}" class="mt-2 text-center" style="max-width: 100%"></div>`;
+            loadMapAsync(data.list[i], mapId);
+        }
         html += '</li>';
     }
 
@@ -101,7 +107,7 @@ function drawValidityResult(data) {
         for (let i = 1; i < keywordsList.length; i++) {
             const keywords = keywordsList[i];
 
-            html += '<div id="result-list">';
+            html += '<div id="result-list" class="mt-5">';
             html += '<p>\'' + keywords + '\' 검색 결과</p>';
             html += '<ul class="list-group">';
 
@@ -121,6 +127,50 @@ function drawValidityResult(data) {
 
     document.getElementById('result-container').innerHTML = html;
     document.getElementById('result-container').classList.remove('d-none');
+}
+
+// 지도 이미지 생성
+async function loadMapAsync(data, targetId) {
+    const imgHtml = await getGeocode(data);
+    const targetDiv = document.getElementById(targetId);
+    if (targetDiv && imgHtml) targetDiv.innerHTML = imgHtml;
+}
+
+// 주소를 좌표로 변환
+async function getGeocode(data) {
+    const addr1 = document.getElementById('addrNum').innerText;
+    const url = `/api/v1/validity/get-code?query=${encodeURIComponent(addr1)}`;
+
+    try {
+        const response = await fetch(url);
+        const result = await response.json();
+        const param = {
+            'addr1x': result.addresses[0].x,
+            'addr1y': result.addresses[0].y,
+            'addr2x': (data.mapx/10000000).toString(),
+            'addr2y': (data.mapy/10000000).toString()
+        };
+        console.log(param);
+
+        return getMapImg(param);
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+// 지도 이미지 생성
+async function getMapImg(param) {
+    const url = `/api/v1/validity/get-img?addr1x=${encodeURIComponent(param.addr1x)}&addr1y=${encodeURIComponent(param.addr1y)}&addr2x=${encodeURIComponent(param.addr2x)}&addr2y=${encodeURIComponent(param.addr2y)}`;
+
+    try {
+        const response = await fetch(url);
+        const result = await response.blob();
+        const imageObjectURL = URL.createObjectURL(result);
+
+        return '<img src="' + imageObjectURL + '" class="mb-3" />';
+    } catch (e) {
+        console.error(e);
+    }
 }
 
 // 폼 초기화

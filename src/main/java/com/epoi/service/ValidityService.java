@@ -1,6 +1,7 @@
 package com.epoi.service;
 
-import com.epoi.api.NaverSearchApiConfig;
+import com.epoi.api.NaverMapApi;
+import com.epoi.api.NaverSearchApi;
 import com.epoi.controller.dto.ValidityDTO;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,10 +15,12 @@ import java.util.*;
 public class ValidityService {
     Logger logger = LoggerFactory.getLogger(getClass());
 
-    public final NaverSearchApiConfig naverSearchApiConfig;
+    public final NaverSearchApi naverSearchApi;
+    public final NaverMapApi naverMapApi;
 
-    public ValidityService(NaverSearchApiConfig naverSearchApiConfig) {
-        this.naverSearchApiConfig = naverSearchApiConfig;
+    public ValidityService(NaverSearchApi naverSearchApi, NaverMapApi naverMapApi) {
+        this.naverSearchApi = naverSearchApi;
+        this.naverMapApi = naverMapApi;
     }
 
     // 네이버 지역 검색 결과 반환
@@ -43,10 +46,9 @@ public class ValidityService {
         keywords.put("addrNum", param.get("addrNum"));
         keywords.put("local", param.get("addrNum").split(" ")[0] + " " + param.get("addrNum").split(" ")[1] + " " + param.get("addrNum").split(" ")[2]);
         if (param.get("place").split(";").length > 1) keywords.put("addKeywords", param.get("place").split(";", 2)[1]);
-        logger.info("keywords: " + keywords);
 
         // 검색 결과를 java 객체로 변환
-        List<ValidityDTO> list = jsonParser(naverSearchApiConfig.searchPlace(keywords.get("placeAndAddr")));
+        List<ValidityDTO> list = jsonParser(naverSearchApi.searchPlace(keywords.get("placeAndAddr")));
         List<ValidityDTO> resultList = new ArrayList<>();
         String flag = "";
 
@@ -57,10 +59,15 @@ public class ValidityService {
             if (
                     (dto.getPlace().equals(keywords.get("place")) && dto.getAddrLoad().contains(keywords.get("addrLoad"))) ||
                     (dto.getPlace().equals(keywords.get("place")) && dto.getAddrNum().contains(keywords.get("addrNum")))
-            ) result.put("msg", msgFind);
+            ) {
+                result.put("msg", msgFind);
+                result.put("status", "1");
 
             // 상호와 지역은 동일하나 상세 주소가 다른 경우
-            if (dto.getPlace().equals(keywords.get("place")) && dto.getAddrNum().contains(keywords.get("local"))) result.put("msg", msgSimilar);
+            } else if (dto.getPlace().equals(keywords.get("place")) && dto.getAddrNum().contains(keywords.get("local"))) {
+                result.put("msg", msgSimilar);
+                result.put("status", "3");
+            }
 
             if (result.containsKey("msg")) {
                 resultList.clear();
@@ -70,30 +77,37 @@ public class ValidityService {
         }
 
         // 관련 장소를 찾지 못한 경우
-        list = jsonParser(naverSearchApiConfig.searchPlace(keywords.get("addrNum") + " " + keywords.get("place")));
+        if (!result.containsKey("msg")) {
+            list = jsonParser(naverSearchApi.searchPlace(keywords.get("addrNum") + " " + keywords.get("place")));
 
-        for (ValidityDTO dto : list) {
-            resultList.add(dto);
-
-            // 상호와 도로명 주소 또는 지번 주소가 검색어와 같은 경우
-            if (
-                    (dto.getPlace().equals(keywords.get("place")) && dto.getAddrLoad().contains(keywords.get("addrLoad"))) ||
-                            (dto.getPlace().equals(keywords.get("place")) && dto.getAddrNum().contains(keywords.get("addrNum")))
-            ) {
-                resultList.clear();
+            for (ValidityDTO dto : list) {
                 resultList.add(dto);
-                result.put("msg", msgFind);
-                break;
+
+                // 상호와 도로명 주소 또는 지번 주소가 검색어와 같은 경우
+                if (
+                        (dto.getPlace().equals(keywords.get("place")) && dto.getAddrLoad().contains(keywords.get("addrLoad"))) ||
+                        (dto.getPlace().equals(keywords.get("place")) && dto.getAddrNum().contains(keywords.get("addrNum")))
+                ) {
+                    resultList.clear();
+                    resultList.add(dto);
+                    result.put("msg", msgFind);
+                    result.put("status", "1");
+                    break;
+                }
+            }
+
+            if (!result.containsKey("msg")) {
+                result.put("msg", msgNotFind);
+                result.put("status", "2");
             }
         }
 
-        if (!result.containsKey("msg")) result.put("msg", msgNotFind);
-        if (!resultList.isEmpty()) result.put("list", list);
+        result.put("list", list);
 
         // 추가 검색 키워드가 있는 경우
         if (keywords.containsKey("addKeywords")) {
             for (String keywordsEach : keywords.get("addKeywords").split(";")) {
-                result.put(keywordsEach, jsonParser(naverSearchApiConfig.searchPlace(keywords.get("addrNum") + " " + keywordsEach.trim())));
+                result.put(keywordsEach, jsonParser(naverSearchApi.searchPlace(keywords.get("addrNum") + " " + keywordsEach.trim())));
             }
         }
 

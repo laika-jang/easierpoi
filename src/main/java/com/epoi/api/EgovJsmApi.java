@@ -12,7 +12,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 @Service
-public class EgovJsmApiConfig {
+public class EgovJsmApi {
 
     @Value("${egov.jsm.api.client-key}") // 환경변수에서 Access Key ID
     private String accessKey;

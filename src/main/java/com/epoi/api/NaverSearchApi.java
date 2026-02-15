@@ -12,7 +12,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 @Service
-public class NaverSearchApiConfig {
+public class NaverSearchApi {
     Logger logger = LoggerFactory.getLogger(getClass());
 
     @Value("${naver.search.api.client-id}") // Access Key ID
