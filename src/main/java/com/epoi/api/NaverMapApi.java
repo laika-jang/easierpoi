@@ -54,7 +54,6 @@ public class NaverMapApi {
 
     // 정적 이미지 반환
     public byte[] raster(Map<String, String> param) {
-        logger.info(param.toString());
         String url = "https://maps.apigw.ntruss.com/map-static/v2/raster";
 
         try {
@@ -64,17 +63,7 @@ public class NaverMapApi {
             headers.set("x-ncp-apigw-api-key", secretKey);
             headers.setContentType(MediaType.IMAGE_JPEG);
 
-            // 주소 인코딩
-            URI uri = UriComponentsBuilder
-                    .fromUriString(url)
-                    .queryParam("w", "442")
-                    .queryParam("h", "360")
-                    .queryParam("level", "16")
-                    .queryParam("markers", "pos:127.1054221%2037.3591614")
-                    .encode(StandardCharsets.UTF_8)
-                    .build()
-                    .toUri();
-
+            // 주소 형성
             String marker1 = String.format("type:n|size:tiny|color:blue|pos:%s %s", param.get("addr1x"), param.get("addr1y"));
             String marker2 = String.format("type:d|size:tiny|color:orange|pos:%s %s", param.get("addr2x"), param.get("addr2y"));
             String fullUrl = String.format(url + "?w=%s&h=%s&markers=%s&markers=%s", "442", "360", marker1, marker2);
