@@ -64,7 +64,7 @@ async function validity() {
 }
 
 // 검사 결과 출력
-function drawValidityResult(data, addrNum) {
+function drawValidityResult(data) {
     let html = '';
 
     // msg 출력
@@ -76,9 +76,7 @@ function drawValidityResult(data, addrNum) {
     if (data.list === null) return false;
 
     // 검색 결과 출력
-    const resultList = document.querySelector('#result-list .list-group');
-
-    html += '<div id="result-list" class="mt-5">';
+    html += '<div id="result-list" class="mt-4">';
     html += '<p>검색 결과</p>';
     html += '<ul class="list-group">';
 
@@ -125,14 +123,15 @@ function drawValidityResult(data, addrNum) {
         }
     }
 
-    document.getElementById('result-container').innerHTML = html;
-    document.getElementById('result-container').classList.remove('d-none');
+    document.getElementById('valid-result-container').innerHTML = html;
+    document.getElementById('valid-result-container').classList.remove('d-none');
 }
 
 // 지도 이미지 생성
 async function loadMapAsync(data, targetId) {
     const imgHtml = await getGeocode(data);
     const targetDiv = document.getElementById(targetId);
+
     if (targetDiv && imgHtml) targetDiv.innerHTML = imgHtml;
 }
 
@@ -150,7 +149,6 @@ async function getGeocode(data) {
             'addr2x': (data.mapx/10000000).toString(),
             'addr2y': (data.mapy/10000000).toString()
         };
-        console.log(param);
 
         return getMapImg(param);
     } catch (e) {
@@ -192,7 +190,7 @@ function test(e) {
             break;
         case '2':
             // 동일한 상호를 찾지 못함
-            document.getElementById('place').value = '구로동 메가MGC커피\;병원\;약국';
+            document.getElementById('place').value = '구로동 메가MGC커피\;카페';
             document.getElementById('addr').value = '전북특별자치도 군산시 궁포3로 8';
             break;
         case '3':
