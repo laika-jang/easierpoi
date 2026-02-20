@@ -33,14 +33,6 @@
                         <button type="button" class="btn btn-primary" id="validity">&nbsp;검색&nbsp;</button>
                         <button type="button" class="btn btn-secondary" id="initForm">초기화</button>
                     </div>
-                    <div class="col-auto">
-                        <select class="form-select" id="test">
-                            <option selected>테스트</option>
-                            <option value="1">있어요 (O)</option>
-                            <option value="2">없어요 (X)</option>
-                            <option value="3">다른 주소</option>
-                        </select>
-                    </div>
                 </div>
             </div>
             <div id="valid-result-container" class="d-none" style="max-width: 500px;"></div>

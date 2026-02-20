@@ -48,7 +48,6 @@ public class ValidityService {
         // 검색 결과를 java 객체로 변환
         List<ValidityDTO> list = jsonParser(naverSearchApi.searchPlace(keywords.get("placeAndAddr")));
         List<ValidityDTO> resultList = new ArrayList<>();
-        String flag = "";
 
         for (ValidityDTO dto : list) {
             resultList.add(dto);
@@ -58,11 +57,13 @@ public class ValidityService {
                     (dto.getPlace().equals(keywords.get("place")) && dto.getAddrLoad().contains(keywords.get("addrLoad"))) ||
                     (dto.getPlace().equals(keywords.get("place")) && dto.getAddrNum().contains(keywords.get("addrNum")))
             ) {
+                logger.info("status = 1, msg = " + msgFind);
                 result.put("msg", msgFind);
                 result.put("status", "1");
 
             // 상호와 지역은 동일하나 상세 주소가 다른 경우
             } else if (dto.getPlace().equals(keywords.get("place")) && dto.getAddrNum().contains(keywords.get("local"))) {
+                logger.info("status = 3, msg = " + msgSimilar);
                 result.put("msg", msgSimilar);
                 result.put("status", "3");
             }
@@ -70,12 +71,17 @@ public class ValidityService {
             if (result.containsKey("msg")) {
                 resultList.clear();
                 resultList.add(dto);
+                logger.info("msg exists. resultList.size() = " + resultList.size());
                 break;
             }
+
+            logger.info("Go to next dto.");
         }
 
         // 관련 장소를 찾지 못한 경우
         if (!result.containsKey("msg")) {
+            logger.info("msg does not exists. Find other places.");
+
             list = jsonParser(naverSearchApi.searchPlace(keywords.get("addrNum") + " " + keywords.get("place")));
 
             for (ValidityDTO dto : list) {
@@ -86,8 +92,10 @@ public class ValidityService {
                         (dto.getPlace().equals(keywords.get("place")) && dto.getAddrLoad().contains(keywords.get("addrLoad"))) ||
                         (dto.getPlace().equals(keywords.get("place")) && dto.getAddrNum().contains(keywords.get("addrNum")))
                 ) {
+                    logger.info("status = 1, msg = " + msgFind);
                     resultList.clear();
                     resultList.add(dto);
+                    logger.info("msg exists. resultList.size() = " + resultList.size());
                     result.put("msg", msgFind);
                     result.put("status", "1");
                     break;
@@ -95,6 +103,7 @@ public class ValidityService {
             }
 
             if (!result.containsKey("msg")) {
+                logger.info("status = 2, msg = " + msgNotFind);
                 result.put("msg", msgNotFind);
                 result.put("status", "2");
             }

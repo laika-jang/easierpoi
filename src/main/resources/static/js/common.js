@@ -9,9 +9,6 @@ function setEvents() {
 
     // 입력폼 초기화
     document.getElementById('initForm').addEventListener('click', initForm);
-
-    // 테스트용 버튼
-    document.getElementById('test').addEventListener('change', test);
 }
 
 // 도로명 주소를 지번 주소로 변환
@@ -178,28 +175,4 @@ function initForm() {
     document.getElementById('result-msg').innerHTML = '';
     document.getElementById('result-list').innerHTML = '';
     document.getElementById('result-container').classList.add('d-none');
-}
-
-// 테스트
-function test(e) {
-    switch (e.target.value) {
-        case '1':
-            // 같은 주소에 동일한 상호 있음
-            document.getElementById('place').value = '조촌동 메가MGC커피 군산조촌점';
-            document.getElementById('addr').value = '전북특별자치도 군산시 궁포3로 8';
-            break;
-        case '2':
-            // 동일한 상호를 찾지 못함
-            document.getElementById('place').value = '구로동 메가MGC커피\;카페';
-            document.getElementById('addr').value = '전북특별자치도 군산시 궁포3로 8';
-            break;
-        case '3':
-            // 다른 주소에 동일한 상호 있음
-            document.getElementById('place').value = '조촌동 메가MGC커피 군산조촌점';
-            document.getElementById('addr').value = '전북특별자치도 군산시 궁포3로 12';
-            break;
-        default:
-            initForm();
-            break;
-    }
 }
