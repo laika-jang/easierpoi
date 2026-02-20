@@ -15,12 +15,10 @@ import java.util.*;
 public class ValidityService {
     Logger logger = LoggerFactory.getLogger(getClass());
 
-    public final NaverSearchApi naverSearchApi;
-    public final NaverMapApi naverMapApi;
+    private final NaverSearchApi naverSearchApi;
 
     public ValidityService(NaverSearchApi naverSearchApi, NaverMapApi naverMapApi) {
         this.naverSearchApi = naverSearchApi;
-        this.naverMapApi = naverMapApi;
     }
 
     // 네이버 지역 검색 결과 반환

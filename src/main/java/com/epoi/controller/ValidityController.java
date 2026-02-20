@@ -12,7 +12,7 @@ import java.util.Map;
 public class ValidityController {
     private final ValidityService validityService;
     private final EgovJsmApi egovJsmApi;
-    public final NaverMapApi naverMapApi;
+    private final NaverMapApi naverMapApi;
 
     public ValidityController(ValidityService validityService, EgovJsmApi egovJsmApi, NaverMapApi naverMapApi) {
         this.validityService = validityService;
