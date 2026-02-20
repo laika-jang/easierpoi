@@ -43,7 +43,6 @@ public class ValidityService {
         keywords.put("addrLoad", param.get("addrLoad").isEmpty() ? "" : param.get("addrLoad"));
         keywords.put("addrNum", param.get("addrNum"));
         keywords.put("local", param.get("addrNum").split(" ")[0] + " " + param.get("addrNum").split(" ")[1] + " " + param.get("addrNum").split(" ")[2]);
-        if (param.get("place").split(";").length > 1) keywords.put("addKeywords", param.get("place").split(";", 2)[1]);
 
         // 검색 결과를 java 객체로 변환
         List<ValidityDTO> list = jsonParser(naverSearchApi.searchPlace(keywords.get("placeAndAddr")));
@@ -110,13 +109,6 @@ public class ValidityService {
         }
 
         result.put("list", list);
-
-        // 추가 검색 키워드가 있는 경우
-        if (keywords.containsKey("addKeywords")) {
-            for (String keywordsEach : keywords.get("addKeywords").split(";")) {
-                result.put(keywordsEach, jsonParser(naverSearchApi.searchPlace(keywords.get("addrNum") + " " + keywordsEach.trim())));
-            }
-        }
 
         return result;
     }

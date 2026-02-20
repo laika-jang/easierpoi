@@ -15,7 +15,7 @@ function setEvents() {
 async function changeAddr(e) {
     const addr = document.getElementById('addr').value;
     const addrSplit = addr.split(' ');
-
+// ***** 로직 변경 필요
     if (addrSplit[2].endsWith("로") || addrSplit[2].endsWith("길") || addrSplit[3].endsWith("로") || addrSplit[3].endsWith("길")) {
         // 주소 값이 도로명 주소인 경우 지번 주소로 변환
         try {
@@ -94,31 +94,6 @@ function drawValidityResult(data) {
 
     html += '</ul>';
     html += '</div>';
-
-    // 키워드 검색 결과 출력
-    if (document.getElementById('place').value.includes(';')) {
-        const keywordsList = document.getElementById('place').value.split(';');
-
-        for (let i = 1; i < keywordsList.length; i++) {
-            const keywords = keywordsList[i];
-
-            html += '<div id="result-list" class="mt-5">';
-            html += '<p>\'' + keywords + '\' 검색 결과</p>';
-            html += '<ul class="list-group">';
-
-            for (let j = 0; j < data[keywords].length; j++) {
-                html += '<li class="list-group-item">';
-                html += '<p>' + data[keywords][j].place + ' <small class="text-body-tertiary">(' + data[keywords][j].category + ')</small></p>';
-                html += '<small>' + data[keywords][j].addrLoad + '<br />';
-                html += '<span class="text-body-tertiary">' + data[keywords][j].addrNum + '</span>';
-                html += '</small>';
-                html += '</li>';
-            }
-
-            html += '</ul>';
-            html += '</div>';
-        }
-    }
 
     document.getElementById('valid-result-container').innerHTML = html;
     document.getElementById('valid-result-container').classList.remove('d-none');
