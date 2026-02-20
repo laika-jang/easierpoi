@@ -21,7 +21,6 @@
                 <div class="mb-2 form-floating">
                     <input type="text" class="form-control" id="place" name="place" placeholder="상호를 입력하세요" required />
                     <label for="place" class="form-label">상호 (필수)</label>
-                    <div class="form-text">;으로 구분하여 여러 개의 검색어를 함께 입력할 수 있습니다</div>
                 </div>
                 <div class="mb-2 form-floating">
                     <input type="text" class="form-control" id="addr" name="addr" placeholder="주소를 입력하세요" required />
