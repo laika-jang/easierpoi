@@ -56,10 +56,8 @@ public class EgovJsmApi {
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode root = objectMapper.readTree(response.getBody());
 
-            if (root.path("results").path("common").path("totalCount").asInt() == 1) {
-                result.put("addrLoad", root.path("results").path("juso").get(0).path("roadAddrPart1").asText());
-                result.put("addrNum", root.path("results").path("juso").get(0).path("jibunAddr").asText());
-            }
+            result.put("addrLoad", root.path("results").path("juso").get(0).path("roadAddrPart1").asText());
+            result.put("addrNum", root.path("results").path("juso").get(0).path("jibunAddr").asText());
         } catch (Exception e) {
             result.put("error", e.getMessage());
         }

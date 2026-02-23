@@ -25,7 +25,7 @@
                 <div class="mb-2 form-floating">
                     <input type="text" class="form-control" id="addr" name="addr" placeholder="주소를 입력하세요" required />
                     <label for="addr" class="form-label">주소 (필수)</label>
-                    <div id="addrNum" class="form-text"></div>
+                    <div id="addr-num" class="form-text"></div>
                 </div>
                 <div class="row mt-4">
                     <div class="col-auto">

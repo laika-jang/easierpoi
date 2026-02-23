@@ -29,7 +29,7 @@ async function changeAddr(e) {
         const data = await response.json();
 
         document.getElementById('addr').value = data.addrLoad !== undefined ? data.addrLoad : '';
-        document.getElementById('addrNum').innerHTML = data.addrNum !== undefined ? data.addrNum : '';
+        document.getElementById('addr-num').innerHTML = data.addrNum !== undefined ? data.addrNum : '';
     } catch (e) {
         console.error(e);
     }
@@ -46,7 +46,7 @@ async function validity() {
 
     const place = document.getElementById('place').value;
     const addrLoad = document.getElementById('addr').value;
-    const addrNum = document.getElementById('addrNum').innerText;
+    const addrNum = document.getElementById('addr-num').innerText;
     const url = `/api/v1/validity/get-result?place=${encodeURIComponent(place)}&addrLoad=${encodeURIComponent(addrLoad)}&addrNum=${encodeURIComponent(addrNum)}`;
 
     try {
@@ -108,7 +108,7 @@ async function loadMapAsync(data, targetId) {
 
 // 주소를 좌표로 변환
 async function getGeocode(data) {
-    const addr1 = document.getElementById('addrNum').innerText;
+    const addr1 = document.getElementById('addr-num').innerText;
     const url = `/api/v1/validity/get-code?query=${encodeURIComponent(addr1)}`;
 
     try {
@@ -146,6 +146,7 @@ async function getMapImg(param) {
 function initForm() {
     document.getElementById('place').value = '';
     document.getElementById('addr').value = '';
+    document.getElementById('addr-num').innerHTML = '';
     document.getElementById('result-msg').innerHTML = '';
     document.getElementById('result-list').innerHTML = '';
     document.getElementById('result-container').classList.add('d-none');
