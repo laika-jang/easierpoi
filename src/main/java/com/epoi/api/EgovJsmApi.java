@@ -2,6 +2,8 @@ package com.epoi.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -10,6 +12,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class EgovJsmApi {
@@ -18,8 +22,9 @@ public class EgovJsmApi {
     private String accessKey;
 
     // 도로명주소 검색 공공 API
-    public String getAddrNum(String keyword) {
-        String result = "";
+    public Map<String, String> getAddr(String keyword) {
+        Logger logger = LoggerFactory.getLogger(getClass());
+        Map<String, String> result = new HashMap<>();
 
         try {
             // API
@@ -47,17 +52,17 @@ public class EgovJsmApi {
                     String.class
             );
 
-            // 지번주소만 반환
+            // 도로명주소 및 지번주소 반환
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode root = objectMapper.readTree(response.getBody());
-            JsonNode jusoList = root.path("results").path("juso");
 
-            if (jusoList.isArray() && !jusoList.isEmpty()) result = jusoList.get(0).path("jibunAddr").asText();
-
+            if (root.path("results").path("common").path("totalCount").asInt() == 1) {
+                result.put("addrLoad", root.path("results").path("juso").get(0).path("roadAddrPart1").asText());
+                result.put("addrNum", root.path("results").path("juso").get(0).path("jibunAddr").asText());
+            }
         } catch (Exception e) {
-            result = "Error: " + e.getMessage();
+            result.put("error", e.getMessage());
         }
-
         return result;
     }
 }

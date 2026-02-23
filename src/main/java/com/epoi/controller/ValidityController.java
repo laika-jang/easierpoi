@@ -20,9 +20,9 @@ public class ValidityController {
         this.naverMapApi = naverMapApi;
     }
 
-    @GetMapping("/get-addr-num")
-    public String getAddrNum(@RequestParam Map<String, String> param) {
-        return egovJsmApi.getAddrNum(param.get("addr"));
+    @GetMapping("/get-addr")
+    public Map<String, String> getAddr(@RequestParam Map<String, String> param) {
+        return egovJsmApi.getAddr(param.get("addr"));
     }
 
     @GetMapping("/get-result")

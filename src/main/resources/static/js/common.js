@@ -15,45 +15,44 @@ function setEvents() {
 async function changeAddr(e) {
     const addr = document.getElementById('addr').value;
     const addrSplit = addr.split(' ');
-// ***** 로직 변경 필요
-    if (addrSplit[2].endsWith("로") || addrSplit[2].endsWith("길") || addrSplit[3].endsWith("로") || addrSplit[3].endsWith("길")) {
-        // 주소 값이 도로명 주소인 경우 지번 주소로 변환
-        try {
-            const response = await fetch(`/api/v1/validity/get-addr-num?addr=${encodeURIComponent(addr)}`);
-            const data = await response.text();
 
-            document.getElementById('addrNum').innerHTML = data;
-        } catch (e) {
-            console.error(e);
-        }
-    } else {
-        // 주소 값이 지번 주소인 경우에는 변환하지 않음
-        // 중복값 제거
-        let addrLoad = addrSplit[0];
+    // 중복값 제거
+    let addrRemoveDupl = addrSplit[0];
 
-        for (let i = 1; i < addrSplit.length; i++) {
-            if (addrSplit[i - 1] !== addrSplit[i]) addrLoad += ' ' + addrSplit[i];
-        }
-        document.getElementById('addr').value = addrLoad;
-        document.getElementById('addrNum').innerHTML = addrLoad;
+    for (let i = 1; i < addrSplit.length; i++) {
+        if (addrSplit[i - 1] !== addrSplit[i]) addrRemoveDupl += ' ' + addrSplit[i];
+    }
+
+    // 주소 값이 도로명 주소인 경우 지번 주소로, 지번 주소인 경우 도로명 주소로 변환
+    try {
+        const response = await fetch(`/api/v1/validity/get-addr?addr=${encodeURIComponent(addr)}`);
+        const data = await response.json();
+
+        document.getElementById('addr').value = data.addrLoad !== undefined ? data.addrLoad : '';
+        document.getElementById('addrNum').innerHTML = data.addrNum !== undefined ? data.addrNum : '';
+    } catch (e) {
+        console.error(e);
     }
 }
 
 // 유효성 검사
 async function validity() {
-    if (!document.getElementById('place').value) return alert("상호를 입력하세요.");
-    if (!document.getElementById('addr').value) return alert("주소를 입력하세요.");
+    if (!document.getElementById('place').value) return alert('상호를 입력하세요.');
+    if (!document.getElementById('addr').value) return alert('주소를 입력하세요.');
+    if (document.getElementById('place').value === document.getElementById('addr').value) return alert('입력값을 확인하세요.');
+    if (document.getElementById('addr').value === 'null') return  alert('주소값이 없어 결과를 불러올 수 없습니다.');
 
     await changeAddr();
 
     const place = document.getElementById('place').value;
-    const addrLoad = document.getElementById('addr').value === document.getElementById('addrNum').innerText ? '' : document.getElementById('addr').value;
+    const addrLoad = document.getElementById('addr').value;
     const addrNum = document.getElementById('addrNum').innerText;
     const url = `/api/v1/validity/get-result?place=${encodeURIComponent(place)}&addrLoad=${encodeURIComponent(addrLoad)}&addrNum=${encodeURIComponent(addrNum)}`;
 
     try {
         const response = await fetch(url);
         const data = await response.json();
+
         drawValidityResult(data);
     } catch (e) {
         console.error(e);

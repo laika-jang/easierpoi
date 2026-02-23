@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 @Service
 public class ValidityService {
@@ -38,11 +39,19 @@ public class ValidityService {
          * local       : 지역
          * */
         Map<String, String> keywords = new HashMap<>();
-        keywords.put("place", param.get("place").split(";", 2)[0].split(" ", 2)[1]);
+        keywords.put("place", param.get("place").split(" ", 2)[1]);
         keywords.put("placeAndAddr", (param.get("addrNum").split(" ")[0] + " " + param.get("addrNum").split(" ")[1] + " " + param.get("place")));
         keywords.put("addrLoad", param.get("addrLoad").isEmpty() ? "" : param.get("addrLoad"));
         keywords.put("addrNum", param.get("addrNum"));
-        keywords.put("local", param.get("addrNum").split(" ")[0] + " " + param.get("addrNum").split(" ")[1] + " " + param.get("addrNum").split(" ")[2]);
+
+        // local 값 추출
+        StringBuilder local = new StringBuilder();
+        for (String str : param.get("addrNum").split(" ")) {
+            if (Pattern.matches(str, "^[\\d-]+$")) break;
+            local.append(str).append(" ");
+        }
+        logger.info("local: " + local);
+        keywords.put("local", local.toString().trim());
 
         // 검색 결과를 java 객체로 변환
         List<ValidityDTO> list = jsonParser(naverSearchApi.searchPlace(keywords.get("placeAndAddr")));
