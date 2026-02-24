@@ -56,12 +56,10 @@ async function validity() {
     const addrLoad = isAddrLoad ? document.getElementById('addr').value : '';
     const addrNum = isAddrLoad ? document.getElementById('addr-num').innerText : document.getElementById('addr').value;
     const url = `/api/v1/validity/get-result?place=${encodeURIComponent(place)}&addrLoad=${encodeURIComponent(addrLoad)}&addrNum=${encodeURIComponent(addrNum)}`;
-    console.log('url: ' + url);
 
     try {
         const response = await fetch(url);
         const data = await response.json();
-        console.log('data: ' + data);
 
         drawValidityResult(data);
     } catch (e) {
@@ -73,13 +71,24 @@ async function validity() {
 function drawValidityResult(data) {
     let html = '';
 
-    // msg 출력
-    html += '<div id="result-msg" class="alert alert-secondary" role="alert">';
-    html += data.msg;
-    html += '</div>';
-
     // data.list가 없을 경우 함수 종료
-    if (data.list === null) return false;
+    if (data.list.length === 0) {
+        html += '<div id="result-msg" class="alert alert-secondary" role="alert">';
+        html += '없어요 (X)';
+        html += '</div>';
+
+        document.getElementById('result-container').innerHTML = html;
+        document.getElementById('result-container').classList.remove('d-none');
+
+        return false;
+    }
+
+    // 검색 결과가 있을 경우
+    if (data.status === true) {
+        html += '<div id="result-msg" class="alert alert-primary" role="alert">';
+        html += '있어요 (O)';
+        html += '</div>';
+    }
 
     // 검색 결과 출력
     html += '<div id="result-list" class="mt-4">';
@@ -89,12 +98,34 @@ function drawValidityResult(data) {
     for (let i = 0; i < data.list.length; i++) {
         const mapId = `map-${i}`;
 
-        html += '<li class="list-group-item">';
+        html += '<li class="list-group-item p-3">';
+
+        switch (data.list[i].status) {
+            case '1':
+                html += '<span class="badge text-bg-primary me-2 mb-2">상호 일치</span>';
+                html += '<span class="badge text-bg-success">주소 일치</span>';
+                break;
+            case '2':
+                html += '<span class="badge text-bg-secondary me-2 mb-2">상호 불일치</span>';
+                html += '<span class="badge text-bg-success">주소 일치</span>';
+                break;
+            case '3':
+                html += '<span class="badge text-bg-primary me-2 mb-2">상호 일치</span>';
+                html += '<span class="badge text-bg-secondary">주소 불일치</span>';
+                break;
+            case '4':
+                html += '<span class="badge text-bg-secondary me-2 mb-2">상호 불일치</span>';
+                html += '<span class="badge text-bg-secondary">주소 불일치</span>';
+                break;
+            default:
+                break;
+        }
+
         html += '<p>' + data.list[i].place + ' <small class="text-body-tertiary">(' + data.list[i].category + ')</small></p>';
         html += '<small>' + data.list[i].addrLoad + '<br />';
         html += '<span class="text-body-tertiary">' + data.list[i].addrNum + '</span>';
         html += '</small>';
-        if (data.status === "3") {
+        if (data.list[i].status === "3") {
             html += `<div id="${mapId}" class="mt-2 text-center" style="max-width: 100%"></div>`;
             loadMapAsync(data.list[i], mapId);
         }
@@ -104,8 +135,8 @@ function drawValidityResult(data) {
     html += '</ul>';
     html += '</div>';
 
-    document.getElementById('valid-result-container').innerHTML = html;
-    document.getElementById('valid-result-container').classList.remove('d-none');
+    document.getElementById('result-container').innerHTML = html;
+    document.getElementById('result-container').classList.remove('d-none');
 }
 
 // 지도 이미지 생성
@@ -146,7 +177,7 @@ async function getMapImg(param) {
         const result = await response.blob();
         const imageObjectURL = URL.createObjectURL(result);
 
-        return '<img src="' + imageObjectURL + '" class="mb-3" />';
+        return '<img src="' + imageObjectURL + '" class="mb-2" />';
     } catch (e) {
         console.error(e);
     }
@@ -157,7 +188,6 @@ function initForm() {
     document.getElementById('place').value = '';
     document.getElementById('addr').value = '';
     document.getElementById('addr-num').innerHTML = '';
-    document.getElementById('result-msg').innerHTML = '';
-    document.getElementById('result-list').innerHTML = '';
+    document.getElementById('result-container').innerHTML = '';
     document.getElementById('result-container').classList.add('d-none');
 }

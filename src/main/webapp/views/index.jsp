@@ -23,7 +23,7 @@
                     <label for="place" class="form-label">상호 (필수)</label>
                 </div>
                 <div class="mb-2 form-floating">
-                    <input type="text" class="form-control" id="addr" name="addr" placeholder="주소를 입력하세요" required value="인천광역시 서구 가정동 483-1" />
+                    <input type="text" class="form-control" id="addr" name="addr" placeholder="주소를 입력하세요" required value="인천광역시 서구 가정로 406" />
                     <label for="addr" class="form-label">주소 (필수)</label>
                     <div id="addr-num" class="form-text"></div>
                 </div>
@@ -34,7 +34,7 @@
                     </div>
                 </div>
             </div>
-            <div id="valid-result-container" class="d-none" style="max-width: 500px;"></div>
+            <div id="result-container" class="d-none" style="max-width: 500px;"></div>
         </div>
         <div class="tab-pane fade" id="userReq-tab-pane" role="tabpanel" aria-labelledby="userReq-tab" tabindex="0"></div>
     </div>

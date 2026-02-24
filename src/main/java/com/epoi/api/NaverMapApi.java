@@ -64,8 +64,8 @@ public class NaverMapApi {
             headers.setContentType(MediaType.IMAGE_JPEG);
 
             // 주소 형성
-            String marker1 = String.format("type:n|size:tiny|color:blue|pos:%s %s", param.get("addr1x"), param.get("addr1y"));
-            String marker2 = String.format("type:d|size:tiny|color:orange|pos:%s %s", param.get("addr2x"), param.get("addr2y"));
+            String marker1 = String.format("type:n|size:tiny|color:orange|pos:%s %s", param.get("addr1x"), param.get("addr1y"));
+            String marker2 = String.format("type:d|size:tiny|color:blue|pos:%s %s", param.get("addr2x"), param.get("addr2y"));
             String fullUrl = String.format(url + "?w=%s&h=%s&markers=%s&markers=%s", "442", "360", marker1, marker2);
 
             // 호출
