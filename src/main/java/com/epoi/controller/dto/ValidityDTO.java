@@ -1,5 +1,7 @@
 package com.epoi.controller.dto;
 
+import java.util.Objects;
+
 public class ValidityDTO {
     private String place;
     private String addrLoad;
@@ -8,6 +10,18 @@ public class ValidityDTO {
     private String mapx;
     private String mapy;
     private String status;
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        ValidityDTO that = (ValidityDTO) o;
+        return Objects.equals(place, that.place) && Objects.equals(addrLoad, that.addrLoad) && Objects.equals(addrNum, that.addrNum) && Objects.equals(category, that.category) && Objects.equals(mapx, that.mapx) && Objects.equals(mapy, that.mapy) && Objects.equals(status, that.status);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(place, addrLoad, addrNum, category, mapx, mapy, status);
+    }
 
     public String getPlace() {
         return place;
