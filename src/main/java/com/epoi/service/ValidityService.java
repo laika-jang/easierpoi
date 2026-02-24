@@ -1,6 +1,5 @@
 package com.epoi.service;
 
-import com.epoi.api.NaverMapApi;
 import com.epoi.api.NaverSearchApi;
 import com.epoi.controller.dto.ValidityDTO;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -18,106 +17,103 @@ public class ValidityService {
 
     private final NaverSearchApi naverSearchApi;
 
-    public ValidityService(NaverSearchApi naverSearchApi, NaverMapApi naverMapApi) {
+    public ValidityService(NaverSearchApi naverSearchApi) {
         this.naverSearchApi = naverSearchApi;
     }
 
     // 네이버 지역 검색 결과 반환
     public Map<String, Object> getResult(Map<String, String> param) {
+        logger.info("getResult works. param: {}", param);
         Map<String, Object> result = new HashMap<>();
 
-        // 메시지
-        String msgFind = "있어요 (O)";
-        String msgNotFind = "없어요 (X)";
-        String msgSimilar = "[보류] 장소가 달라요";
-
         /* 키워드 정제
-         * place       : 상호
-         * placeAndAddr: 지역 + 상호 (지역은 시·구 혹은 도·군 단위로 한정)
-         * addrLoad    : 도로명 주소
-         * addrNum     : 지번 주소
-         * local       : 지역
+         * place     : 상호
+         * local     : 지역
+         * addrLoad  : 도로명 주소
+         * addrNum   : 지번 주소
          * */
         Map<String, String> keywords = new HashMap<>();
+
         keywords.put("place", param.get("place").split(" ", 2)[1]);
-        keywords.put("placeAndAddr", (param.get("addrNum").split(" ")[0] + " " + param.get("addrNum").split(" ")[1] + " " + param.get("place")));
+        keywords.put("local", getLocal(param.get("addrNum")));
+        keywords.put("localAndPlace", (keywords.get("local") + " " + param.get("place")));
         keywords.put("addrLoad", param.get("addrLoad").isEmpty() ? "" : param.get("addrLoad"));
         keywords.put("addrNum", param.get("addrNum"));
 
-        // local 값 추출
-        StringBuilder local = new StringBuilder();
-        for (String str : param.get("addrNum").split(" ")) {
-            if (Pattern.matches(str, "^[\\d-]+$")) break;
-            local.append(str).append(" ");
+        // 지역 + 상호로 검색
+        // 관련 장소를 찾지 못한 경우 주소 + 상호로 검색
+        Map<String, Object> map = new HashMap<>();
+        List<ValidityDTO> dtoList = new ArrayList<>();
+        List<String> flagList = new ArrayList<>();
+
+        flagList.add("localAndPlace");
+        flagList.add("addrAndPlace");
+
+        for (String flag : flagList) {
+            map = getResultList(keywords, flag);
+
+            if (map != null) {
+                if ((boolean) map.get("status")) {
+                    result.put("status", true);
+                    result.put("list", map.get("list"));
+                    return result;
+                } else {
+                    dtoList.addAll((List<ValidityDTO>) map.get("list"));
+                }
+            }
         }
-        logger.info("local: " + local);
-        keywords.put("local", local.toString().trim());
+
+        result.put("status", false);
+        result.put("list", dtoList);
+
+        return result;
+    }
+
+    // 검색 결과 목록 정제
+    public Map<String, Object> getResultList(Map<String, String> keywords, String flag) {
+        Map<String, Object> result = new HashMap<>();
+        String keyword = flag.equals("localAndPlace") ?
+                keywords.get("local") + " " + keywords.get("place") :
+                keywords.get("addrNum") + " " + keywords.get("place");
+        boolean hasStatus1 = false;
 
         // 검색 결과를 java 객체로 변환
-        List<ValidityDTO> list = jsonParser(naverSearchApi.searchPlace(keywords.get("placeAndAddr")));
+        List<ValidityDTO> list = jsonParser(naverSearchApi.searchPlace(keyword));
         List<ValidityDTO> resultList = new ArrayList<>();
 
         for (ValidityDTO dto : list) {
-            resultList.add(dto);
+            // 지역 비교
+            boolean isSameLocal = getLocal(dto.getAddrNum()).equals(keywords.get("local"));
 
-            // 상호와 도로명 주소 또는 지번 주소가 검색어와 같은 경우
-            if (
-                    (dto.getPlace().equals(keywords.get("place")) && dto.getAddrLoad().contains(keywords.get("addrLoad"))) ||
-                    (dto.getPlace().equals(keywords.get("place")) && dto.getAddrNum().contains(keywords.get("addrNum")))
-            ) {
-                logger.info("status = 1, msg = " + msgFind);
-                result.put("msg", msgFind);
-                result.put("status", "1");
+            // 상호 비교
+            boolean isSamePlace =
+                    dto.getPlace().equals(keywords.get("place")) ||
+                            dto.getPlace().replaceAll(" ", "").equals(keywords.get("place").replaceAll(" ", ""));
 
-            // 상호와 지역은 동일하나 상세 주소가 다른 경우
-            } else if (dto.getPlace().equals(keywords.get("place")) && dto.getAddrNum().contains(keywords.get("local"))) {
-                logger.info("status = 3, msg = " + msgSimilar);
-                result.put("msg", msgSimilar);
-                result.put("status", "3");
-            }
+            // 주소 비교
+            boolean isSameAddr =
+                    !keywords.get("addrLoad").isEmpty() ?
+                            getAddrOnly(dto.getAddrLoad()).equals(getAddrOnly(keywords.get("addrLoad"))) :
+                            getAddrOnly(dto.getAddrNum()).equals(getAddrOnly(keywords.get("addrNum")));
 
-            if (result.containsKey("msg")) {
+            // 상태값 저장
+            if (isSamePlace && isSameAddr) { // 있어요
+                dto.setStatus("1");
+                hasStatus1 = true;
                 resultList.clear();
                 resultList.add(dto);
-                logger.info("msg exists. resultList.size() = " + resultList.size());
                 break;
             }
+            if (isSamePlace && !isSameAddr && isSameLocal) dto.setStatus("3"); // 다른 장소
+            if (!isSamePlace && isSameAddr) dto.setStatus("2"); // 상호 확인 필요
+            if (!isSamePlace && !isSameAddr && isSameLocal) dto.setStatus("4"); // 상호 및 주소 확인 필요
 
-            logger.info("Go to next dto.");
+            // 같은 지역인 경우에만 목록에 저장
+            if (isSameLocal) resultList.add(dto);
         }
 
-        // 관련 장소를 찾지 못한 경우
-        if (!result.containsKey("msg")) {
-            logger.info("msg does not exists. Find other places.");
-
-            list = jsonParser(naverSearchApi.searchPlace(keywords.get("addrNum") + " " + keywords.get("place")));
-
-            for (ValidityDTO dto : list) {
-                resultList.add(dto);
-
-                // 상호와 도로명 주소 또는 지번 주소가 검색어와 같은 경우
-                if (
-                        (dto.getPlace().equals(keywords.get("place")) && dto.getAddrLoad().contains(keywords.get("addrLoad"))) ||
-                        (dto.getPlace().equals(keywords.get("place")) && dto.getAddrNum().contains(keywords.get("addrNum")))
-                ) {
-                    logger.info("status = 1, msg = " + msgFind);
-                    resultList.clear();
-                    resultList.add(dto);
-                    logger.info("msg exists. resultList.size() = " + resultList.size());
-                    result.put("msg", msgFind);
-                    result.put("status", "1");
-                    break;
-                }
-            }
-
-            if (!result.containsKey("msg")) {
-                logger.info("status = 2, msg = " + msgNotFind);
-                result.put("msg", msgNotFind);
-                result.put("status", "2");
-            }
-        }
-
-        result.put("list", list);
+        result.put("status", hasStatus1);
+        result.put("list", resultList);
 
         return result;
     }
@@ -140,6 +136,7 @@ public class ValidityService {
                     dto.setCategory(item.get("category").toString());
                     dto.setMapx(item.get("mapx").toString());
                     dto.setMapy(item.get("mapy").toString());
+                    dto.setStatus("");
 
                     result.add(dto);
                 }
@@ -149,5 +146,35 @@ public class ValidityService {
         }
 
         return result;
+    }
+
+    // local 추출
+    public String getLocal(String addrNum) {
+        if (addrNum == null || addrNum.isEmpty()) return "";
+
+        StringBuilder local = new StringBuilder();
+        String[] strlist = addrNum.split(" ");
+
+        for (String s : strlist) {
+            local.append(s).append(" ");
+            if (s.endsWith("동") || s.endsWith("면") || s.endsWith("가")) break;
+        }
+
+        return local.toString().trim();
+    }
+
+    // addr 추출
+    public String getAddrOnly(String addrFull) {
+        if (addrFull == null || addrFull.isEmpty()) return "";
+
+        StringBuilder addr = new StringBuilder();
+        String[] strlist = addrFull.split(" ");
+
+        for (String s : strlist) {
+            addr.append(s).append(" ");
+            if (Pattern.matches("^[\\d-]+$", s)) break;
+        }
+
+        return addr.toString().trim();
     }
 }

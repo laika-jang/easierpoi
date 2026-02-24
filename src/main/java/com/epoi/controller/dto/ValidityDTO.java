@@ -7,6 +7,7 @@ public class ValidityDTO {
     private String category;
     private String mapx;
     private String mapy;
+    private String status;
 
     public String getPlace() {
         return place;
@@ -32,6 +33,10 @@ public class ValidityDTO {
         return mapy;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
     public void setPlace(String place) {
         this.place = place;
     }
@@ -54,5 +59,9 @@ public class ValidityDTO {
 
     public void setMapy(String mapy) {
         this.mapy = mapy;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

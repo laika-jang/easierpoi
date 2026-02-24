@@ -19,18 +19,18 @@
         <div class="tab-pane fade show active" id="validation-tab-pane" role="tabpanel" aria-labelledby="validation-tab" tabindex="0">
             <div class="mt-4 mb-4 bg-body rounded-3">
                 <div class="mb-2 form-floating">
-                    <input type="text" class="form-control" id="place" name="place" placeholder="상호를 입력하세요" required />
+                    <input type="text" class="form-control" id="place" name="place" placeholder="상호를 입력하세요" required value="가정동 국공립루원지웰푸르지오 어린이집" />
                     <label for="place" class="form-label">상호 (필수)</label>
                 </div>
                 <div class="mb-2 form-floating">
-                    <input type="text" class="form-control" id="addr" name="addr" placeholder="주소를 입력하세요" required />
+                    <input type="text" class="form-control" id="addr" name="addr" placeholder="주소를 입력하세요" required value="인천광역시 서구 가정동 483-1" />
                     <label for="addr" class="form-label">주소 (필수)</label>
                     <div id="addr-num" class="form-text"></div>
                 </div>
                 <div class="row mt-4">
                     <div class="col-auto">
                         <button type="button" class="btn btn-primary" id="validity">&nbsp;검색&nbsp;</button>
-                        <button type="button" class="btn btn-secondary" id="initForm">초기화</button>
+                        <button type="button" class="btn btn-secondary" id="init-form">초기화</button>
                     </div>
                 </div>
             </div>

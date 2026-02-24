@@ -8,19 +8,21 @@ function setEvents() {
     document.getElementById('validity').addEventListener('click', validity);
 
     // 입력폼 초기화
-    document.getElementById('initForm').addEventListener('click', initForm);
+    document.getElementById('init-form').addEventListener('click', initForm);
 }
 
 // 도로명 주소를 지번 주소로 변환
-async function changeAddr(e) {
+async function changeAddr() {
     const addr = document.getElementById('addr').value;
     const addrSplit = addr.split(' ');
 
-    // 중복값 제거
+    // 중복값 제거 및 주소 타입 구분
     let addrRemoveDupl = addrSplit[0];
+    let isAddrLoad = false;
 
     for (let i = 1; i < addrSplit.length; i++) {
         if (addrSplit[i - 1] !== addrSplit[i]) addrRemoveDupl += ' ' + addrSplit[i];
+        if (addrSplit[i].endsWith('로') || addrSplit[i].endsWith('길')) isAddrLoad = true;
     }
 
     // 주소 값이 도로명 주소인 경우 지번 주소로, 지번 주소인 경우 도로명 주소로 변환
@@ -28,11 +30,17 @@ async function changeAddr(e) {
         const response = await fetch(`/api/v1/validity/get-addr?addr=${encodeURIComponent(addr)}`);
         const data = await response.json();
 
-        document.getElementById('addr').value = data.addrLoad !== undefined ? data.addrLoad : '';
-        document.getElementById('addr-num').innerHTML = data.addrNum !== undefined ? data.addrNum : '';
+        if (data.length > 0) {
+            document.getElementById('addr').value = data.addrLoad;
+            document.getElementById('addr-num').innerHTML = data.addrNum;
+        } else if (!isAddrLoad) {
+            document.getElementById('addr-num').innerHTML = addr;
+        }
     } catch (e) {
         console.error(e);
     }
+
+    return isAddrLoad;
 }
 
 // 유효성 검사
@@ -42,16 +50,18 @@ async function validity() {
     if (document.getElementById('place').value === document.getElementById('addr').value) return alert('입력값을 확인하세요.');
     if (document.getElementById('addr').value === 'null') return  alert('주소값이 없어 결과를 불러올 수 없습니다.');
 
-    await changeAddr();
+    const isAddrLoad = await changeAddr();
 
     const place = document.getElementById('place').value;
-    const addrLoad = document.getElementById('addr').value;
-    const addrNum = document.getElementById('addr-num').innerText;
+    const addrLoad = isAddrLoad ? document.getElementById('addr').value : '';
+    const addrNum = isAddrLoad ? document.getElementById('addr-num').innerText : document.getElementById('addr').value;
     const url = `/api/v1/validity/get-result?place=${encodeURIComponent(place)}&addrLoad=${encodeURIComponent(addrLoad)}&addrNum=${encodeURIComponent(addrNum)}`;
+    console.log('url: ' + url);
 
     try {
         const response = await fetch(url);
         const data = await response.json();
+        console.log('data: ' + data);
 
         drawValidityResult(data);
     } catch (e) {
