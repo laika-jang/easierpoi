@@ -19,11 +19,11 @@
         <div class="tab-pane fade show active" id="validation-tab-pane" role="tabpanel" aria-labelledby="validation-tab" tabindex="0">
             <div class="mt-4 mb-4 bg-body rounded-3">
                 <div class="mb-2 form-floating">
-                    <input type="text" class="form-control" id="place" name="place" placeholder="상호를 입력하세요" required value="가정동 국공립루원지웰푸르지오 어린이집" />
+                    <input type="text" class="form-control" id="place" name="place" placeholder="상호를 입력하세요" required />
                     <label for="place" class="form-label">상호 (필수)</label>
                 </div>
                 <div class="mb-2 form-floating">
-                    <input type="text" class="form-control" id="addr" name="addr" placeholder="주소를 입력하세요" required value="인천광역시 서구 가정로 406" />
+                    <input type="text" class="form-control" id="addr" name="addr" placeholder="주소를 입력하세요" required />
                     <label for="addr" class="form-label">주소 (필수)</label>
                     <div id="addr-num" class="form-text"></div>
                 </div>
