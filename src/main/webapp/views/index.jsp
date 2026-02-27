@@ -37,10 +37,24 @@
                     </div>
                 </div>
             </div>
-            <div id="result-container" class="d-none" style="max-width: 500px;"></div>
+            <div id="result-container" class="d-none"></div>
         </div>
         <div class="tab-pane fade" id="userReq-tab-pane" role="tabpanel" aria-labelledby="userReq-tab" tabindex="0"></div>
-        <div class="tab-pane fade" id="coord-tab-pane" role="tabpanel" aria-labelledby="coord-tab" tabindex="0"></div>
+        <div class="tab-pane fade" id="coord-tab-pane" role="tabpanel" aria-labelledby="coord-tab" tabindex="0">
+            <div class="mt-4 mb-4 bg-body rounded-3">
+                <div class="mb-2">
+                    <input type="file" class="form-control" id="csv-input" name="csv-input" placeholder="상호를 입력하세요" required />
+                    <div class="form-text">CSV 데이터 행: 로컬프로필 ID, 상호명, 지번주소, 도로명주소</div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-primary" id="submit-csv">데이터 변환</button>
+                        <button type="button" class="btn btn-secondary" id="init-data">초기화</button>
+                    </div>
+                </div>
+            </div>
+            <div id="data-container" class="d-none"></div>
+        </div>
     </div>
 </div>
 </body>
