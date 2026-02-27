@@ -5,7 +5,7 @@ function setEvents() {
     document.getElementById('addr').addEventListener('change', changeAddr);
 
     // 유효성 검사
-    document.getElementById('validity').addEventListener('click', validity);
+    document.getElementById('validate').addEventListener('click', validate);
 
     // 입력폼 초기화
     document.getElementById('init-form').addEventListener('click', initForm);
@@ -30,12 +30,8 @@ async function changeAddr() {
         const response = await fetch(`/api/v1/validity/get-addr?addr=${encodeURIComponent(addr)}`);
         const data = await response.json();
 
-        if (data.length > 0) {
-            document.getElementById('addr').value = data.addrLoad;
-            document.getElementById('addr-num').innerHTML = data.addrNum;
-        } else if (!isAddrLoad) {
-            document.getElementById('addr-num').innerHTML = addr;
-        }
+        if (data.addrLoad !== undefined) document.getElementById('addr').value = data.addrLoad;
+        document.getElementById('addr-num').innerHTML = data.addrNum !== undefined ? data.addrNum : isAddrLoad ? '지번주소 없음' : '도로명주소 없음';
     } catch (e) {
         console.error(e);
     }
@@ -44,7 +40,7 @@ async function changeAddr() {
 }
 
 // 유효성 검사
-async function validity() {
+async function validate() {
     if (!document.getElementById('place').value) return alert('상호를 입력하세요.');
     if (!document.getElementById('addr').value) return alert('주소를 입력하세요.');
     if (document.getElementById('place').value === document.getElementById('addr').value) return alert('입력값을 확인하세요.');

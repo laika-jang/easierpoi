@@ -14,6 +14,9 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="userReq-tab" data-bs-toggle="tab" data-bs-target="#userReq-tab-pane" type="button" role="tab" aria-controls="userReq-tab-pane" aria-selected="false">유저 제안</button>
         </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="coord-tab" data-bs-toggle="tab" data-bs-target="#coord-tab-pane" type="button" role="tab" aria-controls="coord-tab-pane" aria-selected="false">유저 제안</button>
+        </li>
     </ul>
     <div class="tab-content mb-4" id="tabContent">
         <div class="tab-pane fade show active" id="validation-tab-pane" role="tabpanel" aria-labelledby="validation-tab" tabindex="0">
@@ -29,7 +32,7 @@
                 </div>
                 <div class="row mt-4">
                     <div class="col-auto">
-                        <button type="button" class="btn btn-primary" id="validity">&nbsp;검색&nbsp;</button>
+                        <button type="button" class="btn btn-primary" id="validate">&nbsp;검색&nbsp;</button>
                         <button type="button" class="btn btn-secondary" id="init-form">초기화</button>
                     </div>
                 </div>
@@ -37,6 +40,7 @@
             <div id="result-container" class="d-none" style="max-width: 500px;"></div>
         </div>
         <div class="tab-pane fade" id="userReq-tab-pane" role="tabpanel" aria-labelledby="userReq-tab" tabindex="0"></div>
+        <div class="tab-pane fade" id="coord-tab-pane" role="tabpanel" aria-labelledby="coord-tab" tabindex="0"></div>
     </div>
 </div>
 </body>
