@@ -110,9 +110,9 @@ public class ValidityService {
                 resultList.add(dto);
                 break;
             }
-            if (isSamePlace && isSameLocal) dto.setStatus("3"); // 다른 장소
+            if (isSamePlace) dto.setStatus("3"); // 다른 장소
             if (!isSamePlace && isSameAddr) dto.setStatus("2"); // 상호 확인 필요
-            if (!isSamePlace && isSameLocal) dto.setStatus("4"); // 상호 및 주소 확인 필요
+            if (!isSamePlace && !isSameAddr) dto.setStatus("4"); // 상호 및 주소 확인 필요
 
             // 같은 지역인 경우에만 목록에 저장
             if (isSameLocal) resultList.add(dto);
