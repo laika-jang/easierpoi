@@ -10,10 +10,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/coordCorrection")
+@RequestMapping("/api/v1/coord-corr")
 public class CoordCorrectionController {
     private final CoordCorrectionService coordCorrectionService;
     private final EgovJsmApi egovJsmApi;
@@ -27,8 +28,8 @@ public class CoordCorrectionController {
         this.naverMapApi = naverMapApi;
     }
 
-    @GetMapping("/get-result")
-    public Map<String, Object> getResult(@RequestParam Map<String, String> param) {
-        return coordCorrectionService.getResult(param);
+    @GetMapping("/get-data")
+    public List<List<Object>> getData() {
+        return coordCorrectionService.getData();
     }
 }
