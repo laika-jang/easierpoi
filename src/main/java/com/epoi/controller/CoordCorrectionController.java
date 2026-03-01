@@ -3,6 +3,7 @@ package com.epoi.controller;
 import com.epoi.api.EgovJsmApi;
 import com.epoi.api.NaverMapApi;
 import com.epoi.api.NaverSearchApi;
+import com.epoi.controller.dto.CoordCorrectionDTO;
 import com.epoi.service.CoordCorrectionService;
 import com.epoi.service.UserSuggestionsService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,7 +30,7 @@ public class CoordCorrectionController {
     }
 
     @GetMapping("/get-data")
-    public List<List<Object>> getData() {
-        return coordCorrectionService.getData();
+    public List<CoordCorrectionDTO> getData() {
+        return coordCorrectionService.setData();
     }
 }

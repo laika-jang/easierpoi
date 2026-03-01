@@ -6,7 +6,8 @@
     <link rel="stylesheet" type="text/css" href="css/common.css" />
 </head>
 <body>
-<div id="wrapper" class="container" style="max-width: 500px;">
+<div id="wrapper" class="container container-lg">
+    <!-- 탭 버튼 -->
     <ul class="nav nav-tabs mt-4" id="tab" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="validation-tab" data-bs-toggle="tab" data-bs-target="#validation-tab-pane" type="button" role="tab" aria-controls="validation-tab-pane" aria-selected="true">유효성 검수</button>
@@ -18,6 +19,8 @@
             <button class="nav-link" id="coord-tab" data-bs-toggle="tab" data-bs-target="#coord-tab-pane" type="button" role="tab" aria-controls="coord-tab-pane" aria-selected="false">유저 제안</button>
         </li>
     </ul>
+
+    <!-- 탭 내용 -->
     <div class="tab-content mb-4" id="tabContent">
         <div class="tab-pane fade show active" id="validation-tab-pane" role="tabpanel" aria-labelledby="validation-tab" tabindex="0">
             <div class="mt-4 mb-4 bg-body rounded-3">
@@ -49,9 +52,26 @@
                     </div>
                 </div>
             </div>
-            <div id="data-container" class="d-none"></div>
         </div>
     </div>
+
+
+    <!-- 좌표보정 데이터 -->
+    <div id="data-container" class="container container-lg d-none">
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">티켓ID</th>
+                <th scope="col">상호</th>
+                <th scope="col">주소</th>
+                <th scope="col" class="text-center">보정여부</th>
+                <th scope="col" class="text-center">특이사항</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
 </div>
 </body>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
