@@ -4,3 +4,9 @@
     margin-right: auto;
     margin-left: auto;
 }
+
+#data-container tbody th,
+#data-container tbody td:nth-child(1),
+#data-container tbody td:nth-child(2) {
+    cursor: pointer;
+}

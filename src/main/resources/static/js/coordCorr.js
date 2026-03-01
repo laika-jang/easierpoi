@@ -6,6 +6,7 @@ function setCoordEvents() {
 
     // 입력폼 초기화
     document.getElementById('init-data').addEventListener('click', initCoordData);
+    document.getElementById('tab').addEventListener('click', initCoordData);
 }
 
 // 구글시트 데이터 불러오기
@@ -44,53 +45,70 @@ function drawCoordResult(data) {
     for (let i = 0; i < data.length; i++) {
         const ticketID = data[i].localProfileID;
 
-        html += '<tr>';
-        html += '<th scope="row">' + ticketID + '</th>';
-        html += '<td>' + data[i].place + '</td>';
-        html += '<td>' + data[i].truncatedAddr + '</td>';
+        html += '<tr id=data-' + i + '>';
+        html += '<th scope="row" style="cursor: pointer">' + ticketID + '</th>';
+        html += '<td style="cursor: pointer">' + data[i].place + '</td>';
+        html += '<td style="cursor: pointer">' + data[i].truncatedAddr + '</td>';
         html += '<td class="text-center">';
         html += '<input class="form-check-input" type="checkbox" id="' + ticketID + '-is-corrected" disabled ';
         if (data[i].isCorrected === 'TRUE') html += 'checked ';
         html += '/>';
         html += '</td>';
-        html += '<td class="text-center">'
-
-        html += '<select class="form-select form-select-sm" aria-label="data-status" id="' + ticketID + '-status">';
-        html += '<option value=""';
-        if (data[i].status === '' && data[i].isCorrected === 'FALSE') html += ' selected';
-        html += '>선택하세요</option>';
-        html += '<option value="처리완료"';
-        if (data[i].status === '' && data[i].isCorrected === 'TRUE') html += ' selected';
-        html += '>처리완료</option>';
-        html += '<option value="폐업"';
-        if (data[i].status === '폐업') html += ' selected';
-        html += '>폐업</option>';
-        html += '<option value="검색 결과 X"';
-        if (data[i].status === '검색 결과 X') html += ' selected';
-        html += '>검색 결과 X</option>';
-        html += '<option value="오차 없음"';
-        if (data[i].status === '오차 없음') html += ' selected';
-        html += '>오차 없음</option>';
-        html += '<option value="포털 수정 필요"';
-        if (data[i].status === '포털 수정 필요') html += ' selected';
-        html += '>포털 수정 필요</option>';
-        html += '<option value="검색 결과 상이"';
-        if (data[i].status === '검색 결과 상이') html += ' selected';
-        html += '>검색 결과 상이</option>';
-        html += '</select>';
-
-        html += '</td>';
+        html += '<td class="text-center">' + data[i].status + '</td>';
         html += '</tr>';
     }
 
     document.querySelector('#data-container .table tbody').innerHTML = html;
     document.getElementById('data-container').classList.remove('d-none');
 
-    setCoordListEvents();
+    setCoordListEvents(data);
 }
 
-function setCoordListEvents() {
-    //
+// html += '<select class="form-select form-select-sm" aria-label="data-status" id="' + ticketID + '-status">';
+// html += '<option value=""';
+// if (data[i].status === '' && data[i].isCorrected === 'FALSE') html += ' selected';
+// html += '>선택하세요</option>';
+// html += '<option value="처리완료"';
+// if (data[i].status === '' && data[i].isCorrected === 'TRUE') html += ' selected';
+// html += '>처리완료</option>';
+// html += '<option value="폐업"';
+// if (data[i].status === '폐업') html += ' selected';
+// html += '>폐업</option>';
+// html += '<option value="검색 결과 X"';
+// if (data[i].status === '검색 결과 X') html += ' selected';
+// html += '>검색 결과 X</option>';
+// html += '<option value="오차 없음"';
+// if (data[i].status === '오차 없음') html += ' selected';
+// html += '>오차 없음</option>';
+// html += '<option value="포털 수정 필요"';
+// if (data[i].status === '포털 수정 필요') html += ' selected';
+// html += '>포털 수정 필요</option>';
+// html += '<option value="검색 결과 상이"';
+// if (data[i].status === '검색 결과 상이') html += ' selected';
+// html += '>검색 결과 상이</option>';
+// html += '</select>';
+
+function setCoordListEvents(data) {
+    for (let i = 0; i < data.length; i++) {
+        // 로컬프로필 아이디 복사
+        document.querySelector('#data-' + i + ' th').addEventListener('click', function () {
+            lpIdToClipboard(data[i].localProfileID)
+        });
+
+        // 상세보기 모달 띄우기
+        document.querySelector('#data-' + i + ' td').addEventListener('click', function () {
+            console.log(data[i]);
+        });
+    }
+}
+
+// 로컬프로필 아이디 복사
+function lpIdToClipboard(lpId) {
+    navigator.clipboard.writeText(lpId)
+        .then(() => {
+            console.log(lpId + ' to clipboard');
+        })
+        .catch();
 }
 
 // 초기화
