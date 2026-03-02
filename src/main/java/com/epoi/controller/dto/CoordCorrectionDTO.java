@@ -10,6 +10,7 @@ public class CoordCorrectionDTO {
     String truncatedAddr;
     String geocodeLat;
     String geocodeLon;
+    String category;
     String isCorrected;
     String status;
 
@@ -47,6 +48,10 @@ public class CoordCorrectionDTO {
 
     public String getGeocodeLon() {
         return geocodeLon;
+    }
+
+    public String getCategory() {
+        return category;
     }
 
     public String getIsCorrected() {
@@ -92,6 +97,8 @@ public class CoordCorrectionDTO {
     public void setGeocodeLon(String geocodeLon) {
         this.geocodeLon = geocodeLon;
     }
+
+    public void setCategory(String category) { this.category = category; }
 
     public void setIsCorrected(String isCorrected) {
         this.isCorrected = isCorrected;

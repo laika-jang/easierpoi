@@ -33,4 +33,9 @@ public class CoordCorrectionController {
     public List<CoordCorrectionDTO> getData() {
         return coordCorrectionService.setData();
     }
+
+    @GetMapping("/get-length")
+    public int getLength(@RequestParam Map<String, String> map) {
+        return coordCorrectionService.getLength(map);
+    }
 }

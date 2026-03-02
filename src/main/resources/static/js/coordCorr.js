@@ -1,3 +1,9 @@
+// bootstrap3 관련 변수
+const dataModal = new bootstrap.Modal('#dataModal');
+const dataModalElem = document.getElementById('dataModal');
+const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+
 setCoordEvents();
 
 function setCoordEvents() {
@@ -17,6 +23,7 @@ async function coordCorr() {
         const response = await fetch(url);
         const data = await response.json();
 
+        // 시트 데이터 출력
         drawCoordResult(data);
     } catch (e) {
         console.error(e);
@@ -45,8 +52,14 @@ function drawCoordResult(data) {
     for (let i = 0; i < data.length; i++) {
         const ticketID = data[i].localProfileID;
 
-        html += '<tr id=data-' + i + '>';
+        html += '<tr data-bs-toggle="modal" data-bs-target="#dataModal" data-bs-idx="' + i + '">';
         html += '<th scope="row" style="cursor: pointer">' + ticketID + '</th>';
+
+        if (data[i].truncatedAddr === '행의 일부 값이 올바르지 않습니다.') {
+            html += '<td colspan="4">' + data[i].truncatedAddr + '</td>';
+            continue;
+        }
+
         html += '<td style="cursor: pointer">' + data[i].place + '</td>';
         html += '<td style="cursor: pointer">' + data[i].truncatedAddr + '</td>';
         html += '<td class="text-center">';
@@ -88,27 +101,119 @@ function drawCoordResult(data) {
 // html += '>검색 결과 상이</option>';
 // html += '</select>';
 
-function setCoordListEvents(data) {
-    for (let i = 0; i < data.length; i++) {
-        // 로컬프로필 아이디 복사
-        document.querySelector('#data-' + i + ' th').addEventListener('click', function () {
-            lpIdToClipboard(data[i].localProfileID)
-        });
+function setCoordListEvents(dataList) {
+    dataModalElem.addEventListener('show.bs.modal', async event => {
+        const idx = event.relatedTarget.getAttribute('data-bs-idx');
+        const data = dataList[idx];
 
-        // 상세보기 모달 띄우기
-        document.querySelector('#data-' + i + ' td').addEventListener('click', function () {
-            console.log(data[i]);
-        });
-    }
+        // 로컬프로필 아이디 복사
+        navigator.clipboard.writeText(data.localProfileID)
+            .then(() => {
+            })
+            .catch();
+
+        // 장소 정보 채우기
+        document.getElementById('data-modal-lp-id').innerHTML = data.localProfileID;
+        document.getElementById('data-modal-place').innerHTML = data.place;
+        document.getElementById('data-modal-category').innerHTML = '(' + data.category + ')';
+        document.getElementById('data-modal-addr-load').innerHTML = data.addrLoad;
+        document.getElementById('data-modal-addr-num').innerHTML = data.addrNum;
+
+        // 장소 검색
+        const place = '지역 ' + data.place;
+        const addrLoad = data.addrLoad !== 'NULL' ? data.addrLoad : '';
+        const addrNum = data.addrNum !== 'NULL' ? data.addrNum : '';
+        const url = `/api/v1/validity/get-result?place=${encodeURIComponent(place)}&addrLoad=${encodeURIComponent(addrLoad)}&addrNum=${encodeURIComponent(addrNum)}`;
+
+        try {
+            const response = await fetch(url);
+            const result = await response.json();
+
+            drawSearchPlaceResult(result);
+        } catch (e) {
+            console.error(e);
+        }
+    });
 }
 
-// 로컬프로필 아이디 복사
-function lpIdToClipboard(lpId) {
-    navigator.clipboard.writeText(lpId)
-        .then(() => {
-            console.log(lpId + ' to clipboard');
-        })
-        .catch();
+// 장소 결과 출력
+function drawSearchPlaceResult(data) {
+    let html = '';
+
+    // data를 볼러오지 못했을 경우 함수 종료
+    if (data.list.length === undefined) {
+        html += '<div id="result-msg" class="alert alert-danger" role="alert">';
+        html += '데이터를 불러오는 중에 오류가 발생했어요.';
+        html += '</div>';
+
+        document.getElementById('data-modal-search-result-container').innerHTML = html;
+        document.getElementById('data-modal-search-result-container').classList.remove('d-none');
+
+        return false;
+    }
+
+    // data.list가 없을 경우 함수 종료
+    if (data.list.length === 0) {
+        html += '<div id="result-msg" class="alert alert-secondary" role="alert">';
+        html += '없어요 (X)';
+        html += '</div>';
+
+        document.getElementById('data-modal-search-result-container').innerHTML = html;
+        document.getElementById('data-modal-search-result-container').classList.remove('d-none');
+
+        return false;
+    }
+
+    // 검색 결과가 있을 경우
+    if (data.status === true) {
+        html += '<div id="result-msg" class="alert alert-primary" role="alert">';
+        html += '있어요 (O)';
+        html += '</div>';
+    }
+
+    // 검색 결과 출력
+    html += '<div id="result-list" class="mt-4">';
+    html += '<p>검색 결과</p>';
+    html += '<ul class="list-group">';
+
+    for (let i = 0; i < data.list.length; i++) {
+        const mapId = `map-${i}`;
+
+        html += '<li class="list-group-item p-3">';
+
+        switch (data.list[i].status) {
+            case '1':
+                html += '<span class="badge text-bg-primary me-2 mb-2">상호 일치</span>';
+                html += '<span class="badge text-bg-success">주소 일치</span>';
+                break;
+            case '2':
+                html += '<span class="badge text-bg-secondary me-2 mb-2">상호 불일치</span>';
+                html += '<span class="badge text-bg-success">주소 일치</span>';
+                break;
+            case '3':
+                html += '<span class="badge text-bg-primary me-2 mb-2">상호 일치</span>';
+                html += '<span class="badge text-bg-secondary">주소 불일치</span>';
+                break;
+            case '4':
+                html += '<span class="badge text-bg-secondary me-2 mb-2">상호 불일치</span>';
+                html += '<span class="badge text-bg-secondary">주소 불일치</span>';
+                break;
+            default:
+                break;
+        }
+
+        html += '<p>' + data.list[i].place + ' <small class="text-body-tertiary">(' + data.list[i].category + ')</small></p>';
+        html += '<small>' + data.list[i].addrLoad + '<br />';
+        html += '<span class="text-body-tertiary">' + data.list[i].addrNum + '</span>';
+        html += '</small>';
+        html += '</li>';
+    }
+
+    html += '</ul>';
+    html += '</div>';
+
+    document.getElementById('data-modal-search-result-container').innerHTML = html;
+    document.getElementById('data-modal-search-result-container').classList.remove('d-none');
 }
 
 // 초기화
