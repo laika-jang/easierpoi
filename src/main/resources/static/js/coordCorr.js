@@ -86,8 +86,9 @@ function setCoordModal(dataList) {
 async function drawCoordModal(dataList, idx) {
     const data = dataList[idx];
 
-    // 스크롤 초기화
+    // 초기화
     document.querySelector('.modal-body').scrollTop = 0;
+    document.getElementById('data-modal-search-result-container').innerHTML = '';
 
     // 로컬프로필 아이디 복사
     navigator.clipboard.writeText(data.localProfileID)
@@ -111,115 +112,34 @@ async function drawCoordModal(dataList, idx) {
     keywordsMap.set('addrLoad', encodeURIComponent(data.addrLoad !== 'NULL' ? data.addrLoad : ''));
     keywordsMap.set('addrNum', encodeURIComponent(data.addrNum !== 'NULL' ? data.addrNum : ''));
     const url = `/api/v1/coord-corr/get-result?place=${keywordsMap.get('place')}&addrLoad=${keywordsMap.get('addrLoad')}&addrNum=${keywordsMap.get('addrNum')}`;
+    let geocodeMap = new Map();
 
     try {
         const response = await fetch(url);
         const result = await response.json();
 
-        drawSearchPlaceResult(result, keywordsMap);
+        geocodeMap = await drawSearchPlaceResult(result, keywordsMap);
     } catch (e) {
         console.error(e);
     }
 
     // 네이버지도 불러오기
     const elemId = 'data-modal-map-main';
-    const geocodeMap = new Map();
     geocodeMap.set('lat1', data.coordinatesX);
     geocodeMap.set('lng1', data.coordinatesY);
+    geocodeMap.set('label1', '당근');
     geocodeMap.set('lat2', data.geocodeLat);
     geocodeMap.set('lng2', data.geocodeLon);
+    geocodeMap.set('label2', '네이버');
     drawMap(elemId, geocodeMap);
 
     setCoordModalEvents(dataList, idx);
 }
 
-function setCoordModalEvents(dataList, idx) {
-    document.getElementById('data-modal-status').onchange = function() {
-        if (this.value === '보정 완료' || this.value === '오차 없음') {
-            document.getElementById('data-modal-is-corr').checked = true;
-        } else {
-            document.getElementById('data-modal-is-corr').checked = false;
-        }
-    };
-
-    document.getElementById('data-modal-update').onclick = async function () {
-        const isCorrected = document.getElementById('data-modal-is-corr').checked === true ? 'TRUE' : 'FALSE';
-        const status = document.getElementById('data-modal-status').value === '보정 전' || document.getElementById('data-modal-status').value === '보정 완료' ? '' : document.getElementById('data-modal-status').value;
-        const idxOnSheet = Number(idx) + 2;
-        const url = `/api/v1/coord-corr/update?idx=${encodeURIComponent(idxOnSheet)}&isCorrected=${encodeURIComponent(isCorrected)}&status=${encodeURIComponent(status)}`;
-
-        const response = await fetch(url);
-
-        if (response.ok) {
-            document.querySelector('[data-bs-idx="' + idx + '"] input[type="checkbox"]').checked = isCorrected === 'TRUE';
-            document.querySelector('[data-bs-idx="' + idx + '"] td:last-child').innerHTML = status;
-
-            moveToNextRow(dataList, idx);
-        } else {
-            const errorMsg = await response.text();
-            console.error(errorMsg);
-        }
-    };
-}function moveToNextRow(dataList, idx) {
-    idx = Number(idx) + 1;
-
-    // 더 이상 데이터가 없으면 모달 닫기
-    if (idx >= dataList.length) {
-        alert("마지막 데이터입니다.");
-        dataModal.hide();
-        return;
-    }
-
-    drawCoordModal (dataList, idx);
-}
-
-// 지도 그리기
-function drawMap(elemId, geocodeMap) {
-    const lat1 = parseFloat(geocodeMap.get('lat1'));
-    const lng1 = parseFloat(geocodeMap.get('lng1'));
-    const lat2 = parseFloat(geocodeMap.get('lat2'));
-    const lng2 = parseFloat(geocodeMap.get('lng2'));
-
-    // 좌표값이 유효한지 체크
-    if (isNaN(lat1) || isNaN(lng1)) return;
-
-    const mapOptions = {
-        center: new naver.maps.LatLng(lat1, lng1),
-        zoom: 15
-    };
-
-    // 전달받은 elemId 사용
-    const map = new naver.maps.Map(elemId, mapOptions);
-
-    const marker1 = new naver.maps.Marker({
-        position: new naver.maps.LatLng(lat1, lng1),
-        map: map,
-        icon: {
-            content: '<div style="background-color:#ff8729; width:20px; height:20px; border-radius:50%; border:2px solid white;"></div>',
-            anchor: new naver.maps.Point(5, 5)
-        }
-    });
-
-    if (!isNaN(lat2) && !isNaN(lng2)) {
-        const marker2 = new naver.maps.Marker({
-            position: new naver.maps.LatLng(lat2, lng2),
-            map: map,
-            icon: {
-                content: '<div style="background-color:#33d535; width:20px; height:20px; border-radius:50%; border:2px solid white;"></div>',
-                anchor: new naver.maps.Point(5, 5)
-            }
-        });
-
-        let bounds = new naver.maps.LatLngBounds();
-        bounds.extend(marker1.getPosition());
-        bounds.extend(marker2.getPosition());
-        map.fitBounds(bounds);
-    }
-}
-
 // 장소 결과 출력
 async function drawSearchPlaceResult(data, keywordsMap) {
     let html = '';
+    let coordMap = new Map();
 
     // data를 볼러오지 못했을 경우 함수 종료
     if (data.list.length === undefined) {
@@ -230,7 +150,7 @@ async function drawSearchPlaceResult(data, keywordsMap) {
         document.getElementById('data-modal-search-result-container').innerHTML = html;
         document.getElementById('data-modal-search-result-container').classList.remove('d-none');
 
-        return false;
+        return coordMap;
     }
 
     // data.list가 없을 경우 함수 종료
@@ -241,10 +161,12 @@ async function drawSearchPlaceResult(data, keywordsMap) {
         html += '없어요 (X)<small class="ms-3">(검색 결과: ' + searchResultLength + '개)</small>';
         html += '</div>';
 
+        document.getElementById('data-modal-is-corr').checked = false;
+        document.getElementById('data-modal-status').value = Number(searchResultLength) > 0 ? '폐업' : '검색 결과 X';
         document.getElementById('data-modal-search-result-container').innerHTML = html;
         document.getElementById('data-modal-search-result-container').classList.remove('d-none');
 
-        return false;
+        return coordMap;
     }
 
     // 검색 결과가 있을 경우
@@ -290,6 +212,10 @@ async function drawSearchPlaceResult(data, keywordsMap) {
         html += '<span class="text-body-tertiary">' + data.list[i].addrNum + '</span>';
         html += '</small>';
         html += '</li>';
+
+        coordMap.set('lat' + (i + 3), (parseFloat(data.list[i].mapy)/10000000).toString());
+        coordMap.set('lng' + (i + 3), (parseFloat(data.list[i].mapx)/10000000).toString());
+        coordMap.set('label' + (i + 3), data.list[i].place);
     }
 
     html += '</ul>';
@@ -297,6 +223,8 @@ async function drawSearchPlaceResult(data, keywordsMap) {
 
     document.getElementById('data-modal-search-result-container').innerHTML = html;
     document.getElementById('data-modal-search-result-container').classList.remove('d-none');
+
+    return coordMap;
 }
 
 // '이름, 도로명주소, 지번주소'의 검색 결과가 있는지 여부 확인
@@ -311,8 +239,118 @@ async function getSearchResultLength(keywordsMap) {
     }
 }
 
-// 처리 결과 저장
-async function update() {}
+// 지도 그리기
+function drawMap(elemId, geocodeMap) {
+    const pointList = [];
+
+    for (let i = 1; i <= 7; i++) {
+        const latKey = `lat${i}`;
+        const lngKey = `lng${i}`;
+        const labelKey = `label${i}`;
+        if (geocodeMap.has(latKey) && geocodeMap.has(lngKey) && geocodeMap.has(labelKey)) {
+            pointList.push({
+                lat: parseFloat(geocodeMap.get(latKey)),
+                lng: parseFloat(geocodeMap.get(lngKey)),
+                label: geocodeMap.get(labelKey),
+                index: i
+            });
+        }
+    }
+
+    if (pointList.length === 0) return;
+
+    const mapOptions = {
+        center: new naver.maps.LatLng(pointList[0].lat, pointList[0].lng),
+        zoom: 15
+    };
+    const map = new naver.maps.Map(elemId, mapOptions);
+    const bounds = new naver.maps.LatLngBounds();
+
+    // 2. 마커 및 말풍선 생성 루프
+    pointList.forEach((point) => {
+        const color = point.index === 1 ? '#ff9800' : (point.index === 2 ? '#1dc800' : '#333');
+        const size = point.index === 1 || point.index === 2 ? '32px' : '18px';
+        const iconType = point.index === 1 || point.index === 2 ? 'bi-geo-alt-fill' : 'bi-' + (point.index - 2) + '-circle-fill';
+        const anchorPoint = point.index === 1 || point.index === 2 ? 18 : 9;
+
+        const marker = new naver.maps.Marker({
+            position: new naver.maps.LatLng(point.lat, point.lng),
+            map: map,
+            icon: {
+                content: `<i class="bi ${iconType}" style="font-size: ${size}; color: ${color};"></i>`,
+                anchor: new naver.maps.Point(`${anchorPoint}`, `${anchorPoint}`)
+            }
+        });
+
+        // 3. 말풍선(InfoWindow) 설정
+        const infoWindow = new naver.maps.InfoWindow({
+            content: '<div class="p-2"><small>' + point.label + '</small></div>',
+            backgroundColor: "#fff",
+            borderColor: "#ccc",
+            borderWidth: 1,
+            disableAnchor: false,
+            anchorSize: new naver.maps.Size(10, 10),
+            pixelOffset: new naver.maps.Point(0, -10)
+        });
+
+        // 4. 마커 클릭 시 말풍선 열기/닫기 이벤트
+        naver.maps.Event.addListener(marker, 'click', function() {
+            if (infoWindow.getMap()) {
+                infoWindow.close();
+            } else {
+                infoWindow.open(map, marker);
+            }
+        });
+
+        bounds.extend(marker.getPosition());
+    });
+
+    if (pointList.length > 1) {
+        map.fitBounds(bounds);
+    }
+}
+
+function setCoordModalEvents(dataList, idx) {
+    document.getElementById('data-modal-status').onchange = function() {
+        if (this.value === '보정 완료' || this.value === '오차 없음') {
+            document.getElementById('data-modal-is-corr').checked = true;
+        } else {
+            document.getElementById('data-modal-is-corr').checked = false;
+        }
+    };
+
+    document.getElementById('data-modal-update').onclick = async function () {
+        const isCorrected = document.getElementById('data-modal-is-corr').checked === true ? 'TRUE' : 'FALSE';
+        const status = document.getElementById('data-modal-status').value === '보정 전' || document.getElementById('data-modal-status').value === '보정 완료' ? '' : document.getElementById('data-modal-status').value;
+        const idxOnSheet = Number(idx) + 2;
+        const url = `/api/v1/coord-corr/update?idx=${encodeURIComponent(idxOnSheet)}&isCorrected=${encodeURIComponent(isCorrected)}&status=${encodeURIComponent(status)}`;
+
+        const response = await fetch(url);
+
+        if (response.ok) {
+            document.querySelector('[data-bs-idx="' + idx + '"] input[type="checkbox"]').checked = isCorrected === 'TRUE';
+            document.querySelector('[data-bs-idx="' + idx + '"] td:last-child').innerHTML = status;
+
+            moveToNextRow(dataList, idx);
+        } else {
+            const errorMsg = await response.text();
+            console.error(errorMsg);
+        }
+    };
+}
+
+function moveToNextRow(dataList, idx) {
+    idx = Number(idx) + 1;
+
+    // 더 이상 데이터가 없으면 모달 닫기
+    if (idx >= dataList.length) {
+        alert("마지막 데이터입니다.");
+        dataModal.hide();
+        return;
+    }
+
+    drawCoordModal (dataList, idx);
+}
 
 // 초기화
 function initCoordData() {
