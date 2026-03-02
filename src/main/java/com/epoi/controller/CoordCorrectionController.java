@@ -34,8 +34,13 @@ public class CoordCorrectionController {
         return coordCorrectionService.setData();
     }
 
-    @GetMapping("/get-length")
-    public int getLength(@RequestParam Map<String, String> map) {
-        return coordCorrectionService.getLength(map);
+    @GetMapping("/get-key")
+    public String getKey() {
+        return coordCorrectionService.getKey();
+    }
+
+    @GetMapping("/get-search-result-length")
+    public int getSearchResultLength(@RequestParam Map<String, String> map) {
+        return coordCorrectionService.getSearchResultLength(map);
     }
 }

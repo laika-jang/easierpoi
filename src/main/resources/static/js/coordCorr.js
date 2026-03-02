@@ -108,8 +108,7 @@ function setCoordListEvents(dataList) {
 
         // 로컬프로필 아이디 복사
         navigator.clipboard.writeText(data.localProfileID)
-            .then(() => {
-            })
+            .then(() => {})
             .catch();
 
         // 장소 정보 채우기
@@ -120,16 +119,18 @@ function setCoordListEvents(dataList) {
         document.getElementById('data-modal-addr-num').innerHTML = data.addrNum;
 
         // 장소 검색
-        const place = '지역 ' + data.place;
-        const addrLoad = data.addrLoad !== 'NULL' ? data.addrLoad : '';
-        const addrNum = data.addrNum !== 'NULL' ? data.addrNum : '';
-        const url = `/api/v1/validity/get-result?place=${encodeURIComponent(place)}&addrLoad=${encodeURIComponent(addrLoad)}&addrNum=${encodeURIComponent(addrNum)}`;
+        const keywordsMap = new Map();
+        keywordsMap.set('place', encodeURIComponent('지역 ' + data.place));
+        keywordsMap.set('addrLoad', encodeURIComponent(data.addrLoad !== 'NULL' ? data.addrLoad : ''));
+        keywordsMap.set('addrNum', encodeURIComponent(data.addrNum !== 'NULL' ? data.addrNum : ''));
+        keywordsMap.set('addrTruncated', encodeURIComponent(data.addrTruncated !== 'NULL' ? data.addrTruncated : ''));
+        const url = `/api/v1/validity/get-result?place=${keywordsMap.get('place')}&addrLoad=${keywordsMap.get('addrLoad')}&addrNum=${keywordsMap.get('addrNum')}`;
 
         try {
             const response = await fetch(url);
             const result = await response.json();
 
-            drawSearchPlaceResult(result);
+            drawSearchPlaceResult(result, keywordsMap);
         } catch (e) {
             console.error(e);
         }
@@ -137,7 +138,7 @@ function setCoordListEvents(dataList) {
 }
 
 // 장소 결과 출력
-function drawSearchPlaceResult(data) {
+async function drawSearchPlaceResult(data, keywordsMap) {
     let html = '';
 
     // data를 볼러오지 못했을 경우 함수 종료
@@ -154,8 +155,10 @@ function drawSearchPlaceResult(data) {
 
     // data.list가 없을 경우 함수 종료
     if (data.list.length === 0) {
+        const searchResultLength = await getSearchResultLength(keywordsMap);
+
         html += '<div id="result-msg" class="alert alert-secondary" role="alert">';
-        html += '없어요 (X)';
+        html += '없어요 (X)<small class="ms-3">(검색 결과: ' + searchResultLength + '개)</small>';
         html += '</div>';
 
         document.getElementById('data-modal-search-result-container').innerHTML = html;
@@ -214,6 +217,18 @@ function drawSearchPlaceResult(data) {
 
     document.getElementById('data-modal-search-result-container').innerHTML = html;
     document.getElementById('data-modal-search-result-container').classList.remove('d-none');
+}
+
+// '이름, 도로명주소, 지번주소'의 검색 결과가 있는지 여부 확인
+async function getSearchResultLength(keywordsMap) {
+    const url = `/api/v1/coord-corr/get-search-result-length?place=${keywordsMap.get('place')}&addrLoad=${keywordsMap.get('addrLoad')}&addrNum=${keywordsMap.get('addrNum')}&addrTruncated=${keywordsMap.get('addrTruncated')}`;
+
+    try {
+        const response = await fetch(url);
+        return await response.text();
+    } catch (e) {
+        console.error(e);
+    }
 }
 
 // 초기화

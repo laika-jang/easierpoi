@@ -1,3 +1,4 @@
+
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
@@ -81,7 +82,7 @@
                 </div>
                 <div class="modal-body">
                     <p>
-                        <span id="data-modal-lp-id" class="badge text-bg-dark me-1">로컬프로필 ID</span>
+                        <span id="data-modal-lp-id" class="d-inline-flex me-1 px-2 py-1 fw-semibold text-warning-primary bg-primary-subtle border border-primary-subtle rounded-2">로컬프로필 ID</span>
                         <b id="data-modal-place">상호</b>
                         <small id="data-modal-category" class="text-body-tertiary ms-2">(카테고리)</small>
                     </p>
@@ -89,6 +90,7 @@
                         <span id="data-modal-addr-load">도로명 주소</span><br />
                         <span id="data-modal-addr-num" class="text-body-tertiary">지번 주소</span>
                     </small>
+                    <div id="map" style="width:100%; height:400px;"></div>
                     <hr />
                     <div id="data-modal-search-result-container" class="d-none"></div>
                 </div>
@@ -103,6 +105,7 @@
 </div>
 </body>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${ncpClientId}"></script>
 <script type="text/javascript" src="js/common.js"></script>
 <script type="text/javascript" src="js/validity.js"></script>
 <script type="text/javascript" src="js/coordCorr.js"></script>

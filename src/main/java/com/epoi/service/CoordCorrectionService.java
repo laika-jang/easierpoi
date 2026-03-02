@@ -6,6 +6,7 @@ import com.epoi.controller.dto.CoordCorrectionDTO;
 import com.epoi.controller.dto.ValidityDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -15,6 +16,9 @@ import java.util.Map;
 @Service
 public class CoordCorrectionService {
     Logger logger = LoggerFactory.getLogger(getClass());
+
+    @Value("${naver.map.api.client-id}") // 환경변수에서 Access Key ID
+    private String accessKey;
 
     private final NaverSearchApi naverSearchApi;
     private final GoogleSheetApi googleSheetApi;
@@ -72,12 +76,17 @@ public class CoordCorrectionService {
         return result;
     }
 
-    public int getLength(Map<String, String> map) {
+    public String getKey() {
+        return accessKey;
+    }
+
+    public int getSearchResultLength(Map<String, String> map) {
         int result = 0;
 
         if (!map.get("place").isEmpty()) result += validityService.jsonParser(naverSearchApi.searchPlace(map.get("place"))).size();
         if (!map.get("addrLoad").isEmpty()) result += validityService.jsonParser(naverSearchApi.searchPlace(map.get("addrLoad"))).size();
         if (!map.get("addrNum").isEmpty()) result += validityService.jsonParser(naverSearchApi.searchPlace(map.get("addrNum"))).size();
+        if (!map.get("addrTruncated").isEmpty()) result += validityService.jsonParser(naverSearchApi.searchPlace(map.get("addrTruncated"))).size();
 
         return result;
     }
