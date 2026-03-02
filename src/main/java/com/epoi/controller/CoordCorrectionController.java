@@ -48,4 +48,9 @@ public class CoordCorrectionController {
     public int getSearchResultLength(@RequestParam Map<String, String> param) {
         return coordCorrectionService.getSearchResultLength(param);
     }
+
+    @GetMapping("/update")
+    public void update(@RequestParam Map<String, String> param) {
+        coordCorrectionService.update(param);
+    }
 }

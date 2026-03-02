@@ -97,8 +97,27 @@
                     <div id="data-modal-search-result-container" class="d-none"></div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">창 닫기</button>
-                    <button type="button" class="btn btn-primary">다음 행으로 이동</button>
+                    <div class="flex-fill col-5">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">창 닫기</button>
+                    </div>
+                    <div class="flex-fill col-1 form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="data-modal-is-corr" disabled>
+                        <label class="form-check-label" for="data-modal-is-corr">보정여부</label>
+                    </div>
+                    <div class="flex-fill col-4">
+                        <div class="input-group">
+                            <select class="form-select" id="data-modal-status" aria-label="data-status">
+                                <option value="" selected>보정 전</option>
+                                <option value="보정 완료">보정 완료</option>
+                                <option value="폐업">폐업</option>
+                                <option value="검색 결과 X">검색 결과 X</option>
+                                <option value="오차 없음">오차 없음</option>
+                                <option value="포털 수정 필요">포털 수정 필요</option>
+                                <option value="검색 결과 상이">검색 결과 상이</option>
+                            </select>
+                            <button id="data-modal-update" class="btn btn-primary" type="button">저장</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

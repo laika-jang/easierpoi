@@ -96,7 +96,6 @@ public class CoordCorrectionService {
         keywords.put("localAndPlace", (keywords.get("local") + " " + param.get("place")));
         keywords.put("addrLoad", param.get("addrLoad").isEmpty() ? "" : validityService.getAddrOnly(param.get("addrLoad")));
         keywords.put("addrNum",  param.get("addrNum").isEmpty() ? "" : validityService.getAddrOnly(param.get("addrNum")));
-        logger.info("key: {}", keywords);
 
         // 지역 + 상호로 검색
         // 관련 장소를 찾지 못한 경우 주소 + 상호로 검색
@@ -139,8 +138,22 @@ public class CoordCorrectionService {
         if (!map.get("place").isEmpty()) result += validityService.jsonParser(naverSearchApi.searchPlace(map.get("place"))).size();
         if (!map.get("addrLoad").isEmpty()) result += validityService.jsonParser(naverSearchApi.searchPlace(map.get("addrLoad"))).size();
         if (!map.get("addrNum").isEmpty()) result += validityService.jsonParser(naverSearchApi.searchPlace(map.get("addrNum"))).size();
-        if (!map.get("addrTruncated").isEmpty()) result += validityService.jsonParser(naverSearchApi.searchPlace(map.get("addrTruncated"))).size();
 
         return result;
+    }
+
+    public void update(Map<String, String> param) {
+        String sheetId = "1R2XHSDi8Dnpwv5_iyDbwaVweNnV-jydsZeoUo2dSHwM";
+        String range = "Sheet1!O" + param.get("idx") + ":Q" + param.get("idx");
+        List<Object> value = new ArrayList<>();
+
+        value.add(param.get("isCorrected"));
+        value.add(param.get("status"));
+
+        try {
+            googleSheetApi.updateSheetData(sheetId, range, value);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

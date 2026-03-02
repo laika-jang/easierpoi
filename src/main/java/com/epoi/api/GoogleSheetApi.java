@@ -11,6 +11,8 @@ import com.google.auth.oauth2.ServiceAccountCredentials;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -37,5 +39,28 @@ public class GoogleSheetApi {
                 .execute();
 
         return response.getValues();
+    }
+
+    public void updateSheetData(String sheetId, String range, List<Object> values) throws IOException {
+        // JSON 키 파일을 이용해 인증
+        GoogleCredentials credentials = ServiceAccountCredentials.fromStream(
+                        new ClassPathResource("static/key/epoi-488801-c2f80eed9058.json").getInputStream())
+                .createScoped(Collections.singleton(SheetsScopes.SPREADSHEETS));
+
+        String APPLICATION_NAME = "epoi";
+        Sheets service = new Sheets.Builder(
+                new NetHttpTransport(),
+                GsonFactory.getDefaultInstance(),
+                new HttpCredentialsAdapter(credentials))
+                .setApplicationName(APPLICATION_NAME)
+                .build();
+
+        ValueRange body = new ValueRange().setValues(Arrays.asList(values));
+
+        // 시트 범위와 업데이트 값 지정
+        service.spreadsheets().values()
+                .update(sheetId, range, body)
+                .setValueInputOption("USER_ENTERED")
+                .execute();
     }
 }
