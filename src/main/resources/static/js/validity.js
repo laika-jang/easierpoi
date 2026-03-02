@@ -67,6 +67,18 @@ async function validate() {
 function drawValidityResult(data) {
     let html = '';
 
+    // data를 볼러오지 못했을 경우 함수 종료
+    if (data.list.length === undefined) {
+        html += '<div id="result-msg" class="alert alert-danger" role="alert">';
+        html += '데이터를 불러오는 중에 오류가 발생했어요.';
+        html += '</div>';
+
+        document.getElementById('result-container').innerHTML = html;
+        document.getElementById('result-container').classList.remove('d-none');
+
+        return false;
+    }
+
     // data.list가 없을 경우 함수 종료
     if (data.list.length === 0) {
         html += '<div id="result-msg" class="alert alert-secondary" role="alert">';
@@ -121,7 +133,7 @@ function drawValidityResult(data) {
         html += '<small>' + data.list[i].addrLoad + '<br />';
         html += '<span class="text-body-tertiary">' + data.list[i].addrNum + '</span>';
         html += '</small>';
-        if (data.list[i].status === "3") {
+        if (data.list[i].status === "3" || data.list[i].status === "4") {
             html += `<div id="${mapId}" class="mt-2 text-center" style="max-width: 100%"></div>`;
             loadMapAsync(data.list[i], mapId);
         }

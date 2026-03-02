@@ -34,7 +34,7 @@ public class ValidityService {
          * */
         Map<String, String> keywords = new HashMap<>();
 
-        keywords.put("place", param.get("place").split(" ", 2)[1]);
+        keywords.put("place", param.get("place").contains(" ") ? param.get("place").split(" ", 2)[1] : param.get("place"));
         keywords.put("local", getLocal(param.get("addrNum")));
         keywords.put("localAndPlace", (keywords.get("local") + " " + param.get("place")));
         keywords.put("addrLoad", param.get("addrLoad").isEmpty() ? "" : param.get("addrLoad"));
