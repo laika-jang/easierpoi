@@ -96,6 +96,19 @@
                     <div id="data-modal-map-main" class="mt-3"></div>
                     <hr />
                     <div id="data-modal-search-result-container" class="d-none"></div>
+                    <div class="row g-3 mt-2">
+                        <div class="col-4">
+                            <label for="add-search-place" class="visually-hidden">상호</label>
+                            <input type="text" class="form-control" id="add-search-place" placeholder="상호">
+                        </div>
+                        <div class="col-6">
+                            <label for="add-search-addr" class="visually-hidden">주소</label>
+                            <input type="text" class="form-control" id="add-search-addr" placeholder="주소">
+                        </div>
+                        <div class="col-2">
+                            <button type="button" id="add-search-button" class="btn btn-primary mb-3">검색</button>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <div class="flex-fill col-5">

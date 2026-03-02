@@ -101,6 +101,8 @@ async function drawCoordModal(dataList, idx) {
     document.getElementById('data-modal-category').innerHTML = '(' + data.category + ')';
     document.getElementById('data-modal-addr-load').innerHTML = data.addrLoad;
     document.getElementById('data-modal-addr-num').innerHTML = data.addrNum;
+    document.getElementById('add-search-place').value = data.place;
+    document.getElementById('add-search-addr').value = data.truncatedAddr;
 
     // 상태값 설정
     document.getElementById('data-modal-is-corr').checked = (data.isCorrected === 'TRUE');
@@ -136,7 +138,7 @@ async function drawCoordModal(dataList, idx) {
     setCoordModalEvents(dataList, idx);
 }
 
-// 장소 결과 출력
+// 장소 검색 결과 출력
 async function drawSearchPlaceResult(data, keywordsMap) {
     let html = '';
     let coordMap = new Map();
@@ -268,7 +270,7 @@ function drawMap(elemId, geocodeMap) {
 
     // 2. 마커 및 말풍선 생성 루프
     pointList.forEach((point) => {
-        const color = point.index === 1 ? '#ff9800' : (point.index === 2 ? '#1dc800' : '#333');
+        const color = point.index === 1 ? '#ff9800' : (point.index === 2 ? '#1dc800' : '#3F51B5');
         const size = point.index === 1 || point.index === 2 ? '32px' : '18px';
         const iconType = point.index === 1 || point.index === 2 ? 'bi-geo-alt-fill' : 'bi-' + (point.index - 2) + '-circle-fill';
         const anchorPoint = point.index === 1 || point.index === 2 ? 18 : 9;
@@ -337,6 +339,10 @@ function setCoordModalEvents(dataList, idx) {
             console.error(errorMsg);
         }
     };
+
+    document.getElementById('add-search-button').onclick = async function () {
+        await additionalSearch(dataList, idx);
+    };
 }
 
 function moveToNextRow(dataList, idx) {
@@ -350,6 +356,54 @@ function moveToNextRow(dataList, idx) {
     }
 
     drawCoordModal (dataList, idx);
+}
+
+async function additionalSearch(dataList, idx) {
+    const data = dataList[idx];
+    const place = document.getElementById('add-search-place').value;
+    const addrRaw = document.getElementById('add-search-addr').value;
+    let addrLoad = '';
+    let addrNum = '';
+
+    // 도로명 주소 및 지번 주소 추출
+    try {
+        const response = await fetch(`/api/v1/validity/get-addr?addr=${encodeURIComponent(addrRaw)}`);
+        const addrMap = await response.json();
+
+        if (addrMap.addrLoad !== undefined) addrLoad = addrMap.addrLoad;
+        if (addrMap.addrNum !== undefined) addrNum = addrMap.addrNum;
+    } catch (e) {
+        console.error(e);
+    }
+
+    // 검색
+    const keywordsMap = new Map();
+    keywordsMap.set('place', encodeURIComponent(place));
+    keywordsMap.set('addrLoad', encodeURIComponent(addrLoad));
+    keywordsMap.set('addrNum', encodeURIComponent(addrNum));
+    const url = `/api/v1/coord-corr/get-result?place=${keywordsMap.get('place')}&addrLoad=${keywordsMap.get('addrLoad')}&addrNum=${keywordsMap.get('addrNum')}`;
+    let geocodeMap = new Map();
+
+    try {
+        const response = await fetch(url);
+        const result = await response.json();
+
+        geocodeMap = await drawSearchPlaceResult(result, keywordsMap);
+    } catch (e) {
+        console.error(e);
+    }
+
+    // 네이버지도 불러오기
+    const elemId = 'data-modal-map-main';
+    geocodeMap.set('lat1', data.coordinatesX);
+    geocodeMap.set('lng1', data.coordinatesY);
+    geocodeMap.set('label1', '당근');
+    geocodeMap.set('lat2', data.geocodeLat);
+    geocodeMap.set('lng2', data.geocodeLon);
+    geocodeMap.set('label2', '네이버');
+    drawMap(elemId, geocodeMap);
+
+    setCoordModalEvents(dataList, idx);
 }
 
 // 초기화

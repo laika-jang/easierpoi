@@ -24,6 +24,7 @@ public class EgovJsmApi {
     // 도로명주소 검색 공공 API
     public Map<String, String> getAddr(String keyword) {
         Logger logger = LoggerFactory.getLogger(getClass());
+
         Map<String, String> result = new HashMap<>();
 
         try {
@@ -56,13 +57,14 @@ public class EgovJsmApi {
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode root = objectMapper.readTree(response.getBody());
 
-            if (root.path("results").path("common").path("totalCount").asInt() == 1) {
+            if (root.path("results").path("common").path("totalCount").asInt() > 0) {
                 result.put("addrLoad", root.path("results").path("juso").get(0).path("roadAddrPart1").asText());
                 result.put("addrNum", root.path("results").path("juso").get(0).path("jibunAddr").asText());
             }
         } catch (Exception e) {
             result.put("error", e.getMessage());
         }
+
         return result;
     }
 }
