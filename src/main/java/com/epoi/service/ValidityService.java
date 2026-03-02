@@ -178,9 +178,9 @@ public class ValidityService {
 
         for (String s : strlist) {
             addr.append(s).append(" ");
-            if (Pattern.matches("^[\\d-]+$", s)) break;
+            if (Pattern.matches("^[\\d,-]+$", s)) break;
         }
 
-        return addr.toString().trim();
+        return addr.toString().replaceAll(",", "").trim();
     }
 }
