@@ -5,6 +5,8 @@
     <title>$Title$</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="css/common.css" />
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${ncpClientId}"></script>
 </head>
 <body>
 <div id="wrapper" class="container container-lg">
@@ -90,7 +92,7 @@
                         <span id="data-modal-addr-load">도로명 주소</span><br />
                         <span id="data-modal-addr-num" class="text-body-tertiary">지번 주소</span>
                     </small>
-                    <div id="map" style="width:100%; height:400px;"></div>
+                    <div id="data-modal-map-main" class="mt-3"></div>
                     <hr />
                     <div id="data-modal-search-result-container" class="d-none"></div>
                 </div>
@@ -104,8 +106,6 @@
 
 </div>
 </body>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${ncpClientId}"></script>
 <script type="text/javascript" src="js/common.js"></script>
 <script type="text/javascript" src="js/validity.js"></script>
 <script type="text/javascript" src="js/coordCorr.js"></script>

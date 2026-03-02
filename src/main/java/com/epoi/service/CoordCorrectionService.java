@@ -9,9 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class CoordCorrectionService {
@@ -78,6 +76,61 @@ public class CoordCorrectionService {
 
     public String getKey() {
         return accessKey;
+    }
+
+    // 네이버 지역 검색 결과 반환
+    public Map<String, Object> getResult(Map<String, String> param) {
+        logger.info("getResult works. param: {}", param);
+        Map<String, Object> result = new HashMap<>();
+
+        /* 키워드 정제
+         * place     : 상호
+         * local     : 지역
+         * addrLoad  : 도로명 주소
+         * addrNum   : 지번 주소
+         * */
+        Map<String, String> keywords = new HashMap<>();
+
+        keywords.put("place", param.get("place"));
+        keywords.put("local", validityService.getLocal(param.get("addrNum")));
+        keywords.put("localAndPlace", (keywords.get("local") + " " + param.get("place")));
+        keywords.put("addrLoad", param.get("addrLoad").isEmpty() ? "" : validityService.getAddrOnly(param.get("addrLoad")));
+        keywords.put("addrNum",  param.get("addrNum").isEmpty() ? "" : validityService.getAddrOnly(param.get("addrNum")));
+        logger.info("key: {}", keywords);
+
+        // 지역 + 상호로 검색
+        // 관련 장소를 찾지 못한 경우 주소 + 상호로 검색
+        Map<String, Object> map = new HashMap<>();
+        List<ValidityDTO> dtoList = new ArrayList<>();
+        List<String> flagList = new ArrayList<>();
+
+        flagList.add("localAndPlace");
+        flagList.add("addrAndPlace");
+
+        for (String flag : flagList) {
+            map = validityService.getResultList(keywords, flag);
+
+            if (map != null) {
+                if ((boolean) map.get("status")) {
+                    result.put("status", true);
+                    result.put("list", map.get("list"));
+                    return result;
+                } else {
+                    List<ValidityDTO> newItems = (List<ValidityDTO>) map.get("list");
+
+                    // 중복값 제거
+                    Set<ValidityDTO> set = new LinkedHashSet<>(dtoList);
+                    set.addAll(newItems);
+
+                    dtoList = new ArrayList<>(set);
+                }
+            }
+        }
+
+        result.put("status", false);
+        result.put("list", dtoList);
+
+        return result;
     }
 
     public int getSearchResultLength(Map<String, String> map) {

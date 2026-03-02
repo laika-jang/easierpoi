@@ -10,3 +10,8 @@
 #data-container tbody td:nth-child(2) {
     cursor: pointer;
 }
+
+#data-modal-map-main {
+    width: 100%;
+    height: 400px;
+}

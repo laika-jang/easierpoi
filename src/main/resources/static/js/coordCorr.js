@@ -1,8 +1,6 @@
 // bootstrap3 관련 변수
 const dataModal = new bootstrap.Modal('#dataModal');
 const dataModalElem = document.getElementById('dataModal');
-const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
 
 setCoordEvents();
 
@@ -102,7 +100,7 @@ function drawCoordResult(data) {
 // html += '</select>';
 
 function setCoordListEvents(dataList) {
-    dataModalElem.addEventListener('show.bs.modal', async event => {
+    dataModalElem.addEventListener('shown.bs.modal', async event => {
         const idx = event.relatedTarget.getAttribute('data-bs-idx');
         const data = dataList[idx];
 
@@ -118,13 +116,21 @@ function setCoordListEvents(dataList) {
         document.getElementById('data-modal-addr-load').innerHTML = data.addrLoad;
         document.getElementById('data-modal-addr-num').innerHTML = data.addrNum;
 
+        // 네이버지도 불러오기
+        const elemId = 'data-modal-map-main';
+        const geocodeMap = new Map();
+        geocodeMap.set('lat1', data.coordinatesX);
+        geocodeMap.set('lng1', data.coordinatesY);
+        geocodeMap.set('lat2', data.geocodeLat);
+        geocodeMap.set('lng2', data.geocodeLon);
+        drawMap(elemId, geocodeMap);
+
         // 장소 검색
         const keywordsMap = new Map();
-        keywordsMap.set('place', encodeURIComponent('지역 ' + data.place));
+        keywordsMap.set('place', encodeURIComponent(data.place));
         keywordsMap.set('addrLoad', encodeURIComponent(data.addrLoad !== 'NULL' ? data.addrLoad : ''));
         keywordsMap.set('addrNum', encodeURIComponent(data.addrNum !== 'NULL' ? data.addrNum : ''));
-        keywordsMap.set('addrTruncated', encodeURIComponent(data.addrTruncated !== 'NULL' ? data.addrTruncated : ''));
-        const url = `/api/v1/validity/get-result?place=${keywordsMap.get('place')}&addrLoad=${keywordsMap.get('addrLoad')}&addrNum=${keywordsMap.get('addrNum')}`;
+        const url = `/api/v1/coord-corr/get-result?place=${keywordsMap.get('place')}&addrLoad=${keywordsMap.get('addrLoad')}&addrNum=${keywordsMap.get('addrNum')}`;
 
         try {
             const response = await fetch(url);
@@ -135,6 +141,50 @@ function setCoordListEvents(dataList) {
             console.error(e);
         }
     });
+}
+
+// 지도 그리기
+function drawMap(elemId, geocodeMap) {
+    const lat1 = parseFloat(geocodeMap.get('lat1'));
+    const lng1 = parseFloat(geocodeMap.get('lng1'));
+    const lat2 = parseFloat(geocodeMap.get('lat2'));
+    const lng2 = parseFloat(geocodeMap.get('lng2'));
+
+    // 좌표값이 유효한지 체크
+    if (isNaN(lat1) || isNaN(lng1)) return;
+
+    const mapOptions = {
+        center: new naver.maps.LatLng(lat1, lng1),
+        zoom: 15
+    };
+
+    // 전달받은 elemId 사용
+    const map = new naver.maps.Map(elemId, mapOptions);
+
+    const marker1 = new naver.maps.Marker({
+        position: new naver.maps.LatLng(lat1, lng1),
+        map: map,
+        icon: {
+            content: '<div style="background-color:#ff8729; width:20px; height:20px; border-radius:50%; border:2px solid white;"></div>',
+            anchor: new naver.maps.Point(5, 5)
+        }
+    });
+
+    if (!isNaN(lat2) && !isNaN(lng2)) {
+        const marker2 = new naver.maps.Marker({
+            position: new naver.maps.LatLng(lat2, lng2),
+            map: map,
+            icon: {
+                content: '<div style="background-color:#33d535; width:20px; height:20px; border-radius:50%; border:2px solid white;"></div>',
+                anchor: new naver.maps.Point(5, 5)
+            }
+        });
+
+        let bounds = new naver.maps.LatLngBounds();
+        bounds.extend(marker1.getPosition());
+        bounds.extend(marker2.getPosition());
+        map.fitBounds(bounds);
+    }
 }
 
 // 장소 결과 출력
