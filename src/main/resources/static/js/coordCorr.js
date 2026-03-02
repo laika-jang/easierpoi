@@ -273,14 +273,15 @@ function drawMap(elemId, geocodeMap) {
         const color = point.index === 1 ? '#ff9800' : (point.index === 2 ? '#1dc800' : '#3F51B5');
         const size = point.index === 1 || point.index === 2 ? '32px' : '18px';
         const iconType = point.index === 1 || point.index === 2 ? 'bi-geo-alt-fill' : 'bi-' + (point.index - 2) + '-circle-fill';
-        const anchorPoint = point.index === 1 || point.index === 2 ? 18 : 9;
+        const anchorPointX = point.index === 1 || point.index === 2 ? 18 : 9;
+        const anchorPointY = point.index === 1 || point.index === 2 ? 32 : 9;
 
         const marker = new naver.maps.Marker({
             position: new naver.maps.LatLng(point.lat, point.lng),
             map: map,
             icon: {
                 content: `<i class="bi ${iconType}" style="font-size: ${size}; color: ${color};"></i>`,
-                anchor: new naver.maps.Point(`${anchorPoint}`, `${anchorPoint}`)
+                anchor: new naver.maps.Point(`${anchorPointX}`, `${anchorPointY}`)
             }
         });
 

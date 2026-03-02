@@ -185,7 +185,7 @@ async function getMapImg(param) {
         const result = await response.blob();
         const imageObjectURL = URL.createObjectURL(result);
 
-        return '<img src="' + imageObjectURL + '" class="mb-2" />';
+        return '<img src="' + imageObjectURL + '" style="width: 100%;" />';
     } catch (e) {
         console.error(e);
     }
