@@ -178,7 +178,7 @@ public class ValidityService {
 
         for (String s : strlist) {
             addr.append(s).append(" ");
-            if (Pattern.matches("^[\\d,-]+$", s)) break;
+            if (Pattern.matches("^(산\\s?)?[\\d,-]+$", s)) break;
         }
 
         return addr.toString().replaceAll(",", "").trim();
