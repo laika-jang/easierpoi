@@ -163,7 +163,7 @@ public class ValidityService {
 
         for (String s : strlist) {
             local.append(s).append(" ");
-            if (s.endsWith("동") || s.endsWith("면") || s.endsWith("가")) break;
+            if (s.endsWith("동") || s.endsWith("면") || s.endsWith("읍") || s.endsWith("가")) break;
         }
 
         return local.toString().trim();
