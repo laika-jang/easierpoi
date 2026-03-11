@@ -104,6 +104,30 @@ async function drawCoordModal(dataList, idx) {
     document.getElementById('add-search-place').value = data.place;
     document.getElementById('add-search-addr').value = data.truncatedAddr;
 
+    // 주소 입력
+    const addrSplit = data.addrNum.split(' ');
+
+    // 중복값 제거 및 주소 타입 구분
+    let addrRemoveDupl = addrSplit[0];
+
+    for (let i = 1; i < addrSplit.length; i++) {
+        if (addrSplit[i - 1] !== addrSplit[i]) addrRemoveDupl += ' ' + addrSplit[i];
+    }
+    data.addrNum = addrRemoveDupl;
+
+    // 도로명 주소와 지번 주소가 같으면 주소검색 api로 새 도로명 주소와 지번 주소 불러오기
+    if (data.addrLoad === data.addrNum) {
+        try {
+            const response = await fetch(`/api/v1/validity/get-addr?addr=${encodeURIComponent(data.addrLoad)}`);
+            const result = await response.json();
+
+            data.addrLoad = result.addrLoad;
+            data.addrNum = result.addrNum;
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
     // 상태값 설정
     document.getElementById('data-modal-is-corr').checked = (data.isCorrected === 'TRUE');
     document.getElementById('data-modal-status').value = data.isCorrected === 'FALSE' && data.status === '' ? '' : data.isCorrected === 'TRUE' && data.status === '' ? '처리완료' : data.status;
@@ -245,7 +269,7 @@ async function getSearchResultLength(keywordsMap) {
 function drawMap(elemId, geocodeMap) {
     const pointList = [];
 
-    for (let i = 1; i <= 7; i++) {
+    for (let i = 1; i <= 12; i++) {
         const latKey = `lat${i}`;
         const lngKey = `lng${i}`;
         const labelKey = `label${i}`;
@@ -268,11 +292,11 @@ function drawMap(elemId, geocodeMap) {
     const map = new naver.maps.Map(elemId, mapOptions);
     const bounds = new naver.maps.LatLngBounds();
 
-    // 2. 마커 및 말풍선 생성 루프
+    // 마커 및 말풍선 생성 루프
     pointList.forEach((point) => {
         const color = point.index === 1 ? '#ff9800' : (point.index === 2 ? '#1dc800' : '#3F51B5');
         const size = point.index === 1 || point.index === 2 ? '32px' : '18px';
-        const iconType = point.index === 1 || point.index === 2 ? 'bi-geo-alt-fill' : 'bi-' + (point.index - 2) + '-circle-fill';
+        const iconType = point.index === 1 || point.index === 2 ? 'bi-geo-alt-fill' : 'bi-' + (point.index === 12 ? '0' : point.index - 2) + '-circle-fill';
         const anchorPointX = point.index === 1 || point.index === 2 ? 18 : 9;
         const anchorPointY = point.index === 1 || point.index === 2 ? 32 : 9;
 
@@ -285,7 +309,7 @@ function drawMap(elemId, geocodeMap) {
             }
         });
 
-        // 3. 말풍선(InfoWindow) 설정
+        // 말풍선(InfoWindow) 설정
         const infoWindow = new naver.maps.InfoWindow({
             content: '<div class="p-2"><small>' + point.label + '</small></div>',
             backgroundColor: "#fff",
@@ -296,7 +320,7 @@ function drawMap(elemId, geocodeMap) {
             pixelOffset: new naver.maps.Point(0, -10)
         });
 
-        // 4. 마커 클릭 시 말풍선 열기/닫기 이벤트
+        // 마커 클릭 시 말풍선 열기/닫기 이벤트
         naver.maps.Event.addListener(marker, 'click', function() {
             if (infoWindow.getMap()) {
                 infoWindow.close();

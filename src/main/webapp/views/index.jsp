@@ -13,20 +13,20 @@
 <div id="wrapper" class="container container-lg">
     <!-- 탭 버튼 -->
     <ul class="nav nav-tabs mt-4" id="tab" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="validation-tab" data-bs-toggle="tab" data-bs-target="#validation-tab-pane" type="button" role="tab" aria-controls="validation-tab-pane" aria-selected="false">유효성 검수</button>
+        <li class="nav-item active" role="presentation">
+            <button class="nav-link active" id="validation-tab" data-bs-toggle="tab" data-bs-target="#validation-tab-pane" type="button" role="tab" aria-controls="validation-tab-pane" aria-selected="true">유효성 검수</button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="userReq-tab" data-bs-toggle="tab" data-bs-target="#userReq-tab-pane" type="button" role="tab" aria-controls="userReq-tab-pane" aria-selected="false">유저 제안</button>
         </li>
-        <li class="nav-item active" role="presentation">
-            <button class="nav-link active" id="coord-tab" data-bs-toggle="tab" data-bs-target="#coord-tab-pane" type="button" role="tab" aria-controls="coord-tab-pane" aria-selected="true">좌표 보정</button>
+        <li class="nav-item d-none" role="presentation">
+            <button class="nav-link" id="coord-tab" data-bs-toggle="tab" data-bs-target="#coord-tab-pane" type="button" role="tab" aria-controls="coord-tab-pane" aria-selected="false">좌표 보정</button>
         </li>
     </ul>
 
     <!-- 탭 내용 -->
     <div class="tab-content mb-4" id="tabContent">
-        <div class="tab-pane fade" id="validation-tab-pane" role="tabpanel" aria-labelledby="validation-tab" tabindex="0">
+        <div class="tab-pane fade show active" id="validation-tab-pane" role="tabpanel" aria-labelledby="validation-tab" tabindex="0">
             <div class="mt-4 mb-4 bg-body rounded-3">
                 <div class="mb-2 form-floating">
                     <input type="text" class="form-control" id="place" name="place" placeholder="상호를 입력하세요" required />
@@ -47,7 +47,7 @@
             <div id="result-container" class="d-none"></div>
         </div>
         <div class="tab-pane fade" id="userReq-tab-pane" role="tabpanel" aria-labelledby="userReq-tab" tabindex="0"></div>
-        <div class="tab-pane fade show active" id="coord-tab-pane" role="tabpanel" aria-labelledby="coord-tab" tabindex="0">
+        <div class="tab-pane fade d-none" id="coord-tab-pane" role="tabpanel" aria-labelledby="coord-tab" tabindex="0">
             <div class="mt-4 mb-4 bg-body rounded-3">
                 <div class="mb-2">
                     <div class="col-auto">
