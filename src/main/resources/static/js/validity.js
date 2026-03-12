@@ -157,7 +157,7 @@ async function loadMapAsync(data, targetId) {
 
 // 주소를 좌표로 변환
 async function getGeocode(data) {
-    const addr1 = document.getElementById('addr-num').innerText;
+    const addr1 = document.getElementById('addr-num').innerText === '지번주소 없음' || document.getElementById('addr-num').innerText === '도로명주소 없음' ? document.getElementById('addr').value : document.getElementById('addr-num').innerText;
     const url = `/api/v1/validity/get-code?query=${encodeURIComponent(addr1)}`;
 
     try {

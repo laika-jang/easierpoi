@@ -1,5 +1,6 @@
 package com.epoi.api;
 
+import com.epoi.service.ValidityService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -20,6 +21,12 @@ public class EgovJsmApi {
 
     @Value("${egov.jsm.api.client-key}") // 환경변수에서 Access Key ID
     private String accessKey;
+
+    private final ValidityService validityService;
+
+    public EgovJsmApi(ValidityService validityService) {
+        this.validityService = validityService;
+    }
 
     // 도로명주소 검색 공공 API
     public Map<String, String> getAddr(String keyword) {
@@ -59,7 +66,7 @@ public class EgovJsmApi {
 
             if (root.path("results").path("common").path("totalCount").asInt() > 0) {
                 result.put("addrLoad", root.path("results").path("juso").get(0).path("roadAddrPart1").asText());
-                result.put("addrNum", root.path("results").path("juso").get(0).path("jibunAddr").asText());
+                result.put("addrNum", validityService.getAddrOnly(root.path("results").path("juso").get(0).path("jibunAddr").asText()));
             }
         } catch (Exception e) {
             result.put("error", e.getMessage());
