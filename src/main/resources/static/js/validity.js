@@ -50,7 +50,7 @@ async function validate() {
 
     const place = document.getElementById('place').value;
     const addrLoad = isAddrLoad ? document.getElementById('addr').value : '';
-    const addrNum = isAddrLoad ? document.getElementById('addr-num').innerText : document.getElementById('addr').value;
+    const addrNum = isAddrLoad ? document.getElementById('addr-num').innerText === '지번주소 없음' ? document.getElementById('addr').value : document.getElementById('addr-num').innerText : '';
     const url = `/api/v1/validity/get-result?place=${encodeURIComponent(place)}&addrLoad=${encodeURIComponent(addrLoad)}&addrNum=${encodeURIComponent(addrNum)}`;
 
     try {
