@@ -25,6 +25,8 @@ async function changeAddr() {
         if (addrSplit[i].endsWith('로') || addrSplit[i].endsWith('길')) isAddrLoad = true;
     }
 
+    if (addr !== addrRemoveDupl) document.getElementById('addr').value = addrRemoveDupl;
+
     // 주소 값이 도로명 주소인 경우 지번 주소로, 지번 주소인 경우 도로명 주소로 변환
     try {
         const response = await fetch(`/api/v1/validity/get-addr?addr=${encodeURIComponent(addr)}`);
