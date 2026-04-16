@@ -304,7 +304,7 @@ function drawMap(elemId, geocodeMap) {
             position: new naver.maps.LatLng(point.lat, point.lng),
             map: map,
             icon: {
-                content: `<i class="bi ${iconType}" style="font-size: ${size}; color: ${color};"></i>`,
+                content: `<!-- 추후 다시 사용하게 될 경우 부트스트랩 아이콘을 임포트하지 말고 이미지 파일을 사용할 것 -->`,
                 anchor: new naver.maps.Point(`${anchorPointX}`, `${anchorPointY}`)
             }
         });
